@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | My Care</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <aside class="sidebar">
+            <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
+
+            <p class="portal-label">PATIENT PORTAL</p>
+
+            <nav class="side-nav">
+                <a class="active" href="#overview"><span>⌂</span> Overview</a>
+                <a href="#book"><span>＋</span> Book appointment</a>
+                <a href="#appointments"><span>▣</span> My appointments</a>
+                <a href="#wellness"><span>♡</span> Wellness plan</a>
+                <a href="#messages"><span>✉</span> Messages <b>2</b></a>
+            </nav>
+
+            <div class="help-card">
+                <span class="help-icon">?</span>
+                <strong>Need assistance?</strong>
+                <p>Our care team is here for you every day.</p>
+                <a href="tel:+6041234567">Call support</a>
+            </div>
+
+            <button class="logout" id="logoutButton">
+                <span>↪</span> Log out
+            </button>
+        </aside>
+
+        <main class="content" id="overview">
+
+            <header class="topbar">
+                <button class="menu-button" id="menuButton">☰</button>
+
+                <div class="page-title">
+                    <p>MONDAY, 15 SEPTEMBER</p>
+                    <h1>My Care Dashboard</h1>
+                </div>
+
+                <div class="top-actions">
+                    <button class="notification">♧<i></i></button>
+
+                    <div class="patient">
+                        <div class="patient-avatar">JL</div>
+                        <div>
+                            <strong id="patientName">Jamie Lee</strong>
+                            <span>Patient</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="welcome-card">
+                <div>
+                    <p class="eyebrow">YOUR WELLNESS, MADE SIMPLE</p>
+                    <h2>Good morning, <span id="welcomeName">Jamie</span>.</h2>
+                    <p>
+                        Take a moment for your health today. Your next
+                        consultation is only a few days away.
+                    </p>
+                    <a href="#book">Book a new appointment <span>→</span></a>
+                </div>
+
+                <div class="herb-art">
+                    <span>✿</span>
+                    <span>❋</span>
+                    <span>●</span>
+                </div>
+            </section>
+
+            <section class="stats">
+                <article>
+                    <span class="stat-icon teal">▣</span>
+                    <div>
+                        <strong>1</strong>
+                        <p>Upcoming appointment</p>
+                    </div>
+                </article>
+
+                <article>
+                    <span class="stat-icon amber">✚</span>
+                    <div>
+                        <strong>3</strong>
+                        <p>Active care plans</p>
+                    </div>
+                </article>
+
+                <article>
+                    <span class="stat-icon rose">♡</span>
+                    <div>
+                        <strong>12</strong>
+                        <p>Wellness check-ins</p>
+                    </div>
+                </article>
+            </section>
+
+            <section class="dashboard-grid">
+
+                <article class="panel appointment-panel" id="appointments">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">NEXT APPOINTMENT</p>
+                            <h2>Your upcoming care</h2>
+                        </div>
+                        <a href="#book">View all</a>
+                    </div>
+
+                    <div class="appointment-detail">
+                        <div class="date-block">
+                            <strong>18</strong>
+                            <span>SEP</span>
+                            <small>THU</small>
+                        </div>
+
+                        <div class="doctor-info">
+                            <div class="doctor-avatar">LW</div>
+                            <div>
+                                <h3>Dr. Lim Wei Ming</h3>
+                                <p>TCM Consultation · 45 minutes</p>
+                                <span>◷ 10:30 AM – 11:15 AM</span>
+                            </div>
+                        </div>
+
+                        <button class="more-button">•••</button>
+                    </div>
+
+                    <div class="appointment-footer">
+                        <span>⌖ TCM Smartcare+ Clinic, Penang</span>
+                        <div>
+                            <button class="text-button">Reschedule</button>
+                            <button class="outline-button">View details</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel wellbeing-panel" id="wellness">
+                    <p class="eyebrow">WELLNESS CHECK-IN</p>
+                    <h2>How are you feeling?</h2>
+                    <p class="muted">
+                        A small daily check-in helps your practitioner understand
+                        your progress.
+                    </p>
+
+                    <div class="mood-row">
+                        <button>😔<span>Low</span></button>
+                        <button>😐<span>Okay</span></button>
+                        <button class="selected">🙂<span>Good</span></button>
+                        <button>😄<span>Great</span></button>
+                    </div>
+
+                    <button class="save-button">Save today’s check-in</button>
+                </article>
+
+            </section>
+
+            <!-- Appointment Finder -->
+            <section class="book-section appointment-finder" id="book">
+
+                <div class="section-intro">
+                    <div>
+                        <p class="eyebrow">MAKE AN APPOINTMENT</p>
+                        <h2>Find your TCM practitioner</h2>
+                    </div>
+
+                    <p>
+                        Filter by treatment and availability, then choose your
+                        practitioner and appointment time.
+                    </p>
+                </div>
+
+                <div class="finder-search">
+                    <span>⌕</span>
+                    <input
+                        type="text"
+                        id="doctorSearch"
+                        placeholder="Search service or practitioner"
+                    >
+                </div>
+
+                <div class="filter-row">
+                    <button class="filter-button active" data-service="all">All services</button>
+                    <button class="filter-button" data-service="consultation">TCM Consultation</button>
+                    <button class="filter-button" data-service="acupuncture">Acupuncture</button>
+                    <button class="filter-button" data-service="herbal">Herbal Medicine</button>
+                    <button class="filter-button" data-service="cupping">Cupping Therapy</button>
+                </div>
+
+                <div class="availability-row">
+                    <p>Refine search by availability</p>
+
+                    <div>
+                        <button class="day-button active" data-day="today">Today</button>
+                        <button class="day-button" data-day="tomorrow">Tomorrow</button>
+                        <button class="day-button" data-day="week">Next 7 days</button>
+                    </div>
+                </div>
+
+                <div class="practitioner-list">
+
+                    <article
+                        class="practitioner-card"
+                        data-services="consultation,acupuncture"
+                        data-name="dr lim wei ming"
+                        data-days="today,tomorrow,week"
+                    >
+                        <div class="practitioner-main">
+                            <div class="practitioner-photo photo-lim">LW</div>
+
+                            <div class="practitioner-details">
+                                <h3>Dr. Lim Wei Ming</h3>
+                                <p>TCM Physician · Acupuncture & General Consultation</p>
+                                <span class="treatment-tag">✓ TCM Consultation</span>
+                                <span class="treatment-tag">✓ Acupuncture</span>
+                            </div>
+
+                            <span class="card-arrow">›</span>
+                        </div>
+
+                        <div class="time-slots">
+                            <strong>Today</strong>
+                            <button class="time-button">10:30 AM</button>
+                            <button class="time-button">11:15 AM</button>
+                            <button class="time-button">2:00 PM</button>
+                            <button class="more-times">+ More</button>
+                        </div>
+                    </article>
+
+                    <article
+                        class="practitioner-card"
+                        data-services="herbal,consultation"
+                        data-name="dr tan mei ling"
+                        data-days="tomorrow,week"
+                    >
+                        <div class="practitioner-main">
+                            <div class="practitioner-photo photo-tan">TM</div>
+
+                            <div class="practitioner-details">
+                                <h3>Dr. Tan Mei Ling</h3>
+                                <p>TCM Physician · Herbal Medicine & Women's Wellness</p>
+                                <span class="treatment-tag">✓ Herbal Medicine</span>
+                                <span class="treatment-tag">✓ TCM Consultation</span>
+                            </div>
+
+                            <span class="card-arrow">›</span>
+                        </div>
+
+                        <div class="time-slots">
+                            <strong>Tomorrow</strong>
+                            <button class="time-button">9:30 AM</button>
+                            <button class="time-button">1:00 PM</button>
+                            <button class="time-button">3:30 PM</button>
+                            <button class="more-times">+ More</button>
+                        </div>
+                    </article>
+
+                    <article
+                        class="practitioner-card"
+                        data-services="acupuncture,cupping"
+                        data-name="dr wong jun hao"
+                        data-days="today,tomorrow,week"
+                    >
+                        <div class="practitioner-main">
+                            <div class="practitioner-photo photo-wong">WJ</div>
+
+                            <div class="practitioner-details">
+                                <h3>Dr. Wong Jun Hao</h3>
+                                <p>TCM Practitioner · Acupuncture & Cupping Therapy</p>
+                                <span class="treatment-tag">✓ Acupuncture</span>
+                                <span class="treatment-tag">✓ Cupping Therapy</span>
+                            </div>
+
+                            <span class="card-arrow">›</span>
+                        </div>
+
+                        <div class="time-slots">
+                            <strong>Today</strong>
+                            <button class="time-button">12:00 PM</button>
+                            <button class="time-button">2:30 PM</button>
+                            <button class="time-button">4:15 PM</button>
+                            <button class="more-times">+ More</button>
+                        </div>
+                    </article>
+
+                </div>
+
+                <p class="no-results" id="noResults">
+                    No practitioners are available for this filter.
+                </p>
+
+                <div class="booking-success" id="bookingSuccess">
+                    <span>✓</span>
+                    <div>
+                        <strong>Appointment time selected</strong>
+                        <p id="bookingMessage"></p>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <div class="toast" id="toast">
+        Your check-in has been saved. Thank you!
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

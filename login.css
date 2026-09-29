@@ -1,0 +1,1302 @@
+/* login.css */
+
+* {
+    margin: -1px;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    background: #e8f3f5;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+}
+
+
+/* =========================================
+   MAIN PAGE
+========================================= */
+
+.page {
+    width: 100%;
+    max-width: 1500px;
+    min-height: calc(100vh - 40px);
+
+    background: #ffffff;
+
+    border-radius: 40px;
+
+    padding: 10px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+.navbar {
+    width: 100%;
+    height: 90px;
+
+    background: #b9ced1;
+
+    border-radius: 30px 30px 0 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 40px;
+}
+
+.logo {
+    font-size: 32px;
+    font-weight: 700;
+
+    letter-spacing: -1px;
+
+    color: #071719;
+}
+
+.logo span {
+    color: #174e50;
+}
+
+nav {
+    display: flex;
+    align-items: center;
+
+    gap: 34px;
+}
+
+nav a {
+    text-decoration: none;
+
+    font-size: 16px;
+
+    color: #102629;
+
+    white-space: nowrap;
+}
+
+nav a:hover {
+    color: #17676a;
+}
+
+.contact-button {
+    background: #174f51;
+
+    color: #ffffff !important;
+
+    padding: 16px 25px;
+
+    border-radius: 30px;
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero {
+    position: relative;
+
+    width: 100%;
+
+    height: calc(100vh - 150px);
+
+    min-height: 650px;
+
+    overflow: hidden;
+
+    border-radius: 0 0 30px 30px;
+
+    background: #dceff6;
+}
+
+
+/* =========================================
+   MAIN IMAGE
+========================================= */
+
+.main-image {
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 68%;
+    height: 100%;
+
+    background-image:
+        linear-gradient(
+            to bottom,
+            rgba(225, 243, 249, 0.03),
+            rgba(10, 61, 65, 0.08)
+        ),
+        url("doctor.jpg");
+
+    background-size: cover;
+
+    background-position: center;
+
+    border-radius: 30px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   HEADING
+========================================= */
+
+.heading {
+    position: absolute;
+
+    top: 35px;
+
+    right: -460px;
+
+    width: 450px;
+
+    text-align: right;
+}
+
+.heading h1 {
+    color: #124b4d;
+
+    font-size: 72px;
+
+    font-weight: 400;
+
+    line-height: 1.13;
+
+    letter-spacing: -2px;
+}
+
+
+/* =========================================
+   DESCRIPTION
+========================================= */
+
+.description {
+    position: absolute;
+
+    left: 45px;
+    bottom: 45px;
+
+    width: 500px;
+
+    color: #ffffff;
+
+    font-size: 22px;
+
+    line-height: 1.48;
+
+    font-weight: 400;
+
+    text-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+
+/* =========================================
+   24/7 SUPPORT
+========================================= */
+
+.support-box {
+    position: absolute;
+
+    right: -5px;
+    bottom: 38px;
+
+    width: 165px;
+    height: 88px;
+
+    background: rgba(240, 248, 248, 0.92);
+
+    border: 1px solid rgba(255, 255, 255, 0.8);
+
+    border-radius: 20px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 10px 12px;
+
+    gap: 10px;
+}
+
+.support-circle {
+    width: 55px;
+    height: 55px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.support-circle span {
+    color: #174e50;
+
+    font-size: 30px;
+}
+
+.support-text strong {
+    display: block;
+
+    color: #102a2c;
+
+    font-size: 27px;
+
+    line-height: 27px;
+}
+
+.support-text p {
+    margin-top: 4px;
+
+    color: #6c7c7e;
+
+    font-size: 18px;
+}
+
+
+/* =========================================
+   LOGIN BOX
+========================================= */
+
+.login-box {
+    position: absolute;
+
+    right: 0;
+    top: auto;
+    bottom: 0;
+
+    width: 32.5%;
+
+    height: 48%;
+
+    min-height: 400px;
+
+    background: #104e50;
+
+    border-radius: 32px 0 30px 0;
+
+    /* Compact spacing keeps the Create Account link inside this card. */
+    padding: 25px 32px 20px;
+}
+
+
+/* =========================================
+   LOGIN TITLE
+========================================= */
+
+.login-box h2 {
+    color: #ffffff;
+
+    font-size: 27px;
+
+    font-weight: 500;
+
+    margin-bottom: 6px;
+}
+
+.login-subtitle {
+    color: #b9d1d2;
+
+    font-size: 13px;
+
+    margin-bottom: 16px;
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.login-box form {
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+.login-box label {
+    color: #ffffff;
+
+    font-size: 14px;
+
+    margin-bottom: 8px;
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+.login-box input[type="email"],
+.login-box input[type="password"] {
+    width: 100%;
+
+    height: 46px;
+
+    border: none;
+
+    outline: none;
+
+    border-radius: 11px;
+
+    background: #1b6669;
+
+    color: #ffffff;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: 13px;
+
+    padding: 0 16px;
+
+    margin-bottom: 12px;
+}
+
+.login-box input::placeholder {
+    color: #c9dddd;
+}
+
+.login-box input[type="email"]:focus,
+.login-box input[type="password"]:focus {
+    box-shadow: 0 0 0 2px #91cbd5;
+}
+
+
+/* =========================================
+   LOGIN OPTIONS
+========================================= */
+
+.login-options {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-top: -5px;
+
+    margin-bottom: 14px;
+}
+
+
+/* Remember Me */
+
+.remember {
+    display: flex !important;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin: 0 !important;
+
+    color: #c9dddd !important;
+
+    font-size: 12px !important;
+
+    cursor: pointer;
+}
+
+.remember input {
+    width: 14px !important;
+    height: 14px !important;
+
+    margin: 0 !important;
+
+    accent-color: #83b8d3;
+
+    cursor: pointer;
+}
+
+
+/* Forgot Password */
+
+.forgot-password {
+    color: #b8d9e1;
+
+    font-size: 12px;
+
+    text-decoration: none;
+}
+
+.forgot-password:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+
+/* =========================================
+   LOGIN BUTTON
+========================================= */
+
+.login-box button {
+    width: 100%;
+
+    height: 48px;
+
+    border: none;
+
+    border-radius: 30px;
+
+    background: #83b8d3;
+
+    color: #ffffff;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    font-size: 15px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.login-box button:hover {
+    background: #99c9df;
+}
+
+.login-box button:active {
+    transform: scale(0.99);
+}
+
+
+/* =========================================
+   REGISTER
+========================================= */
+
+.register-text {
+    text-align: center;
+
+    color: #b9d1d2;
+
+    font-size: 12px;
+
+    margin-top: 11px;
+}
+
+.register-text a {
+    color: #ffffff;
+
+    font-weight: bold;
+
+    text-decoration: none;
+}
+
+.register-text a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================
+   LARGE SCREEN
+========================================= */
+
+@media (min-width: 1600px) {
+
+    .page {
+        max-width: 1600px;
+    }
+
+    .logo {
+        font-size: 35px;
+    }
+
+    nav a {
+        font-size: 17px;
+    }
+
+    .heading {
+        top: 45px;
+
+        right: -510px;
+
+        width: 500px;
+    }
+
+    .heading h1 {
+        font-size: 80px;
+    }
+
+    .description {
+        left: 55px;
+
+        bottom: 55px;
+
+        width: 560px;
+
+        font-size: 24px;
+    }
+
+    .login-box {
+        padding: 45px 38px 30px;
+    }
+
+    .login-box h2 {
+        font-size: 31px;
+    }
+
+    .login-box label {
+        font-size: 15px;
+    }
+
+    .login-box input[type="email"],
+    .login-box input[type="password"] {
+        height: 58px;
+
+        font-size: 14px;
+    }
+
+    .login-box button {
+        height: 58px;
+
+        font-size: 16px;
+    }
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1000px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .page {
+        min-height: calc(100vh - 20px);
+    }
+
+    .navbar {
+        height: 75px;
+
+        padding: 0 25px;
+    }
+
+    .logo {
+        font-size: 25px;
+    }
+
+    nav {
+        gap: 18px;
+    }
+
+    nav a {
+        font-size: 13px;
+    }
+
+    .contact-button {
+        padding: 13px 18px;
+    }
+
+    .hero {
+        height: calc(100vh - 105px);
+
+        min-height: 600px;
+    }
+
+    .heading {
+        right: -330px;
+
+        width: 330px;
+    }
+
+    .heading h1 {
+        font-size: 52px;
+    }
+
+    .description {
+        left: 30px;
+
+        bottom: 30px;
+
+        width: 380px;
+
+        font-size: 17px;
+    }
+
+    .support-box {
+        width: 140px;
+
+        height: 75px;
+    }
+
+    .support-circle {
+        width: 45px;
+
+        height: 45px;
+    }
+
+    .support-text strong {
+        font-size: 23px;
+    }
+
+    .support-text p {
+        font-size: 15px;
+    }
+
+    .login-box {
+        padding: 28px 22px 20px;
+    }
+
+    .login-box h2 {
+        font-size: 23px;
+    }
+
+    .login-subtitle {
+        font-size: 11px;
+
+        margin-bottom: 20px;
+    }
+
+    .login-box input[type="email"],
+    .login-box input[type="password"] {
+        height: 45px;
+
+        margin-bottom: 14px;
+    }
+
+    .login-box button {
+        height: 47px;
+    }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 700px) {
+
+    body {
+        padding: 0;
+    }
+
+    .page {
+        min-height: 100vh;
+
+        border-radius: 0;
+
+        padding: 0;
+    }
+
+    .navbar {
+        height: auto;
+
+        padding: 20px;
+
+        flex-direction: column;
+
+        gap: 18px;
+
+        border-radius: 0;
+    }
+
+    nav {
+        flex-wrap: wrap;
+
+        justify-content: center;
+
+        gap: 15px;
+    }
+
+    .hero {
+        height: 850px;
+
+        min-height: 850px;
+
+        border-radius: 0;
+    }
+
+    .main-image {
+        width: 100%;
+
+        height: 100%;
+
+        border-radius: 0;
+    }
+
+    .heading {
+        top: 25px;
+
+        right: 20px;
+
+        width: 300px;
+    }
+
+    .heading h1 {
+        font-size: 42px;
+    }
+
+    .description {
+        left: 25px;
+
+        bottom: 355px;
+
+        width: 320px;
+
+        font-size: 17px;
+    }
+
+    .support-box {
+        right: 20px;
+
+        bottom: 325px;
+    }
+
+    .login-box {
+        width: 100%;
+
+        top: auto;
+        bottom: 0;
+
+        height: 315px;
+
+        min-height: 315px;
+
+        border-radius: 25px 25px 0 0;
+
+        padding: 20px 25px;
+
+        display: block;
+    }
+
+    .login-box h2 {
+        font-size: 23px;
+    }
+
+    .login-subtitle {
+        margin-bottom: 18px;
+    }
+
+    .login-box input[type="email"],
+    .login-box input[type="password"] {
+        height: 43px;
+
+        margin-bottom: 12px;
+    }
+
+    .login-options {
+        margin-bottom: 18px;
+    }
+
+    .login-box button {
+        height: 45px;
+    }
+
+    .register-text {
+        margin-top: 14px;
+    }
+}
+
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 450px) {
+
+    .logo {
+        font-size: 23px;
+    }
+
+    nav {
+        gap: 10px;
+    }
+
+    nav a {
+        font-size: 11px;
+    }
+
+    .heading {
+        width: 250px;
+    }
+
+    .heading h1 {
+        font-size: 36px;
+    }
+
+    .description {
+        width: 280px;
+
+        font-size: 14px;
+    }
+
+    .login-box {
+        padding: 23px 20px 18px;
+    }
+
+    .login-box h2 {
+        font-size: 21px;
+    }
+
+    .login-box label {
+        font-size: 12px;
+    }
+
+    .login-box input[type="email"],
+    .login-box input[type="password"] {
+        height: 41px;
+    }
+}
+
+
+
+/* =========================================
+   INFORMATION SECTIONS
+========================================= */
+
+.info-section {
+    padding: 100px 8%;
+    color: #102a2c;
+}
+
+.section-label {
+    color: #17676a;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 18px;
+}
+
+.section-heading {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 50px;
+    align-items: end;
+    margin-bottom: 55px;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: #124b4d;
+    font-size: clamp(35px, 4vw, 60px);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -1.5px;
+}
+
+.section-heading p {
+    margin: 0;
+    color: #597174;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+/* About */
+
+.about-section {
+    background: #f4f9f9;
+}
+
+.about-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    font-size: 17px;
+    line-height: 1.8;
+    color: #426164;
+}
+
+.about-content > p {
+    margin: 0;
+}
+
+.approach-box {
+    background: #d9eaeb;
+    border-radius: 24px;
+    padding: 32px;
+}
+
+.approach-box h3 {
+    margin: 0 0 18px;
+    color: #124b4d;
+    font-size: 21px;
+}
+
+.approach-box ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.approach-box li {
+    margin-bottom: 10px;
+}
+
+/* Services */
+
+.services-section {
+    background: #ffffff;
+}
+
+.service-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+}
+
+.service-card {
+    min-height: 255px;
+    background: #e7f1f2;
+    border-radius: 22px;
+    padding: 28px 22px;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.service-card:hover {
+    background: #cfe4e5;
+    transform: translateY(-8px);
+}
+
+.service-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #174f51;
+    color: #ffffff;
+    font-size: 25px;
+}
+
+.service-card h3,
+.team-card h3 {
+    margin: 0 0 12px;
+    color: #124b4d;
+    font-size: 19px;
+}
+
+.service-card p,
+.team-card p {
+    margin: 0;
+    color: #587073;
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+/* Stories */
+
+.stories-section {
+    background: #174f51;
+}
+
+.stories-section .section-label {
+    color: #afd1d2;
+}
+
+.stories-section .section-heading h2 {
+    color: #ffffff;
+}
+
+.stories-section .section-heading p {
+    color: #c7dddd;
+}
+
+.story-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+.story-card {
+    position: relative;
+    min-height: 260px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 24px;
+    padding: 35px;
+    color: #ffffff;
+}
+
+.quote-mark {
+    display: block;
+    color: #8fc2c4;
+    font-size: 60px;
+    line-height: 35px;
+}
+
+.story-card p {
+    margin: 18px 0 25px;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.story-card strong {
+    color: #b9d8d9;
+    font-size: 14px;
+}
+
+.story-card a {
+    display: block;
+    margin-top: 25px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* Team */
+
+.team-section {
+    background: #f4f9f9;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.team-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+}
+
+.doctor-avatar {
+    width: 105px;
+    height: 105px;
+    margin: 0 auto 25px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #b9ced1;
+    color: #174f51;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.team-card span {
+    display: block;
+    margin-bottom: 18px;
+    color: #17676a;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Contact */
+
+.contact-section {
+    background: #e1eff0;
+}
+
+.contact-layout {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 55px;
+}
+
+.clinic-info {
+    padding: 32px;
+    border-radius: 24px;
+    background: #174f51;
+    color: #ffffff;
+}
+
+.clinic-info h3 {
+    margin: 0 0 30px;
+    font-size: 25px;
+    font-weight: 500;
+}
+
+.contact-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.contact-item span {
+    font-size: 21px;
+}
+
+.contact-item p {
+    margin: 0;
+    color: #d3e6e7;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.contact-item strong {
+    color: #ffffff;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-form label {
+    margin-bottom: 8px;
+    color: #174f51;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #b1cbcd;
+    border-radius: 12px;
+    outline: none;
+    background: #ffffff;
+    color: #102a2c;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+}
+
+.contact-form textarea {
+    resize: vertical;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    border-color: #17676a;
+    box-shadow: 0 0 0 3px rgba(23, 103, 106, 0.15);
+}
+
+.contact-form button {
+    height: 52px;
+    border: none;
+    border-radius: 28px;
+    background: #174f51;
+    color: #ffffff;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.contact-form button:hover {
+    background: #17676a;
+}
+
+/* Responsive content sections */
+
+@media (max-width: 1000px) {
+    .service-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .service-card:last-child {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 700px) {
+    .info-section {
+        padding: 70px 7%;
+    }
+
+    .section-heading,
+    .about-content,
+    .contact-layout,
+    .story-grid,
+    .team-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .section-heading {
+        margin-bottom: 38px;
+    }
+
+    .service-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .service-card:last-child {
+        grid-column: auto;
+    }
+
+    .story-card {
+        min-height: auto;
+        padding: 28px;
+    }
+}
+
+
+/* Back to top button */
+
+.back-to-top {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+
+    width: 41px;
+    height: 41px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #174f51;
+    color: #ffffff;
+
+    font-size: 28px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(15px);
+
+    transition: 0.25s ease;
+
+    z-index: 1000;
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: #17676a;
+    transform: translateY(-4px);
+}
+
+@media (max-width: 700px) {
+    .back-to-top {
+        width: 46px;
+        height: 46px;
+
+        right: 20px;
+        bottom: 20px;
+
+        font-size: 24px;
+    }
+}
