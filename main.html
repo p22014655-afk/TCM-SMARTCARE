@@ -5,22 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TCM Smartcare+ | My Care</title>
     <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="doctor-details.css">
 </head>
-
 <body>
     <div class="app-shell">
-
         <aside class="sidebar">
             <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
-
             <p class="portal-label">PATIENT PORTAL</p>
 
             <nav class="side-nav">
-                <a class="active" href="#overview"><span>⌂</span> Overview</a>
-                <a href="#book"><span>＋</span> Book appointment</a>
-                <a href="#appointments"><span>▣</span> My appointments</a>
-                <a href="#wellness"><span>♡</span> Wellness plan</a>
-                <a href="#messages"><span>✉</span> Messages <b>2</b></a>
+                <a href="main.html"><span>⌂</span> Overview</a>
+                <a href="main.html#book"><span>＋</span> Book appointment</a>
+                <a href="appointments.html"><span>▣</span> My appointments</a>
+                <a href="wellness.html"><span>♡</span> Wellness plan</a>
+                <a href="shop.html"><span>♧</span> Herbal shop</a>
+                <a href="cart.html"><span>🛒</span> Cart</a>
+                <a href="messages.html"><span>✉</span> Messages</a>
+                <a href="profile.html"><span>◉</span> My profile</a>
             </nav>
 
             <div class="help-card">
@@ -36,9 +37,8 @@
         </aside>
 
         <main class="content" id="overview">
-
             <header class="topbar">
-                <button class="menu-button" id="menuButton">☰</button>
+                <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
 
                 <div class="page-title">
                     <p>MONDAY, 15 SEPTEMBER</p>
@@ -46,15 +46,15 @@
                 </div>
 
                 <div class="top-actions">
-                    <button class="notification">♧<i></i></button>
+                    <button class="notification" aria-label="Notifications">♧<i></i></button>
 
-                    <div class="patient">
+                    <a class="profile-top-link" href="profile.html" aria-label="Open your profile">
                         <div class="patient-avatar">JL</div>
-                        <div>
+                        <span>
                             <strong id="patientName">Jamie Lee</strong>
-                            <span>Patient</span>
-                        </div>
-                    </div>
+                            <small>View profile</small>
+                        </span>
+                    </a>
                 </div>
             </header>
 
@@ -103,14 +103,13 @@
             </section>
 
             <section class="dashboard-grid">
-
                 <article class="panel appointment-panel" id="appointments">
                     <div class="panel-heading">
                         <div>
                             <p class="eyebrow">NEXT APPOINTMENT</p>
                             <h2>Your upcoming care</h2>
                         </div>
-                        <a href="#book">View all</a>
+                        <a href="appointments.html">View all</a>
                     </div>
 
                     <div class="appointment-detail">
@@ -158,18 +157,14 @@
 
                     <button class="save-button">Save today’s check-in</button>
                 </article>
-
             </section>
 
-            <!-- Appointment Finder -->
             <section class="book-section appointment-finder" id="book">
-
                 <div class="section-intro">
                     <div>
                         <p class="eyebrow">MAKE AN APPOINTMENT</p>
                         <h2>Find your TCM practitioner</h2>
                     </div>
-
                     <p>
                         Filter by treatment and availability, then choose your
                         practitioner and appointment time.
@@ -178,11 +173,7 @@
 
                 <div class="finder-search">
                     <span>⌕</span>
-                    <input
-                        type="text"
-                        id="doctorSearch"
-                        placeholder="Search service or practitioner"
-                    >
+                    <input type="text" id="doctorSearch" placeholder="Search service or practitioner">
                 </div>
 
                 <div class="filter-row">
@@ -195,7 +186,6 @@
 
                 <div class="availability-row">
                     <p>Refine search by availability</p>
-
                     <div>
                         <button class="day-button active" data-day="today">Today</button>
                         <button class="day-button" data-day="tomorrow">Tomorrow</button>
@@ -204,23 +194,18 @@
                 </div>
 
                 <div class="practitioner-list">
-
-                    <article
-                        class="practitioner-card"
+                    <article class="practitioner-card"
                         data-services="consultation,acupuncture"
                         data-name="dr lim wei ming"
-                        data-days="today,tomorrow,week"
-                    >
+                        data-days="today,tomorrow,week">
                         <div class="practitioner-main">
                             <div class="practitioner-photo photo-lim">LW</div>
-
                             <div class="practitioner-details">
                                 <h3>Dr. Lim Wei Ming</h3>
-                                <p>TCM Physician · Acupuncture & General Consultation</p>
+                                <p>TCM Physician · Acupuncture &amp; General Consultation</p>
                                 <span class="treatment-tag">✓ TCM Consultation</span>
                                 <span class="treatment-tag">✓ Acupuncture</span>
                             </div>
-
                             <span class="card-arrow">›</span>
                         </div>
 
@@ -233,22 +218,18 @@
                         </div>
                     </article>
 
-                    <article
-                        class="practitioner-card"
+                    <article class="practitioner-card"
                         data-services="herbal,consultation"
                         data-name="dr tan mei ling"
-                        data-days="tomorrow,week"
-                    >
+                        data-days="tomorrow,week">
                         <div class="practitioner-main">
                             <div class="practitioner-photo photo-tan">TM</div>
-
                             <div class="practitioner-details">
                                 <h3>Dr. Tan Mei Ling</h3>
-                                <p>TCM Physician · Herbal Medicine & Women's Wellness</p>
+                                <p>TCM Physician · Herbal Medicine &amp; Women's Wellness</p>
                                 <span class="treatment-tag">✓ Herbal Medicine</span>
                                 <span class="treatment-tag">✓ TCM Consultation</span>
                             </div>
-
                             <span class="card-arrow">›</span>
                         </div>
 
@@ -261,22 +242,18 @@
                         </div>
                     </article>
 
-                    <article
-                        class="practitioner-card"
+                    <article class="practitioner-card"
                         data-services="acupuncture,cupping"
                         data-name="dr wong jun hao"
-                        data-days="today,tomorrow,week"
-                    >
+                        data-days="today,tomorrow,week">
                         <div class="practitioner-main">
                             <div class="practitioner-photo photo-wong">WJ</div>
-
                             <div class="practitioner-details">
                                 <h3>Dr. Wong Jun Hao</h3>
-                                <p>TCM Practitioner · Acupuncture & Cupping Therapy</p>
+                                <p>TCM Practitioner · Acupuncture &amp; Cupping Therapy</p>
                                 <span class="treatment-tag">✓ Acupuncture</span>
                                 <span class="treatment-tag">✓ Cupping Therapy</span>
                             </div>
-
                             <span class="card-arrow">›</span>
                         </div>
 
@@ -288,7 +265,6 @@
                             <button class="more-times">+ More</button>
                         </div>
                     </article>
-
                 </div>
 
                 <p class="no-results" id="noResults">
@@ -302,9 +278,7 @@
                         <p id="bookingMessage"></p>
                     </div>
                 </div>
-
             </section>
-
         </main>
     </div>
 
@@ -312,6 +286,44 @@
         Your check-in has been saved. Thank you!
     </div>
 
+    <div class="doctor-modal" id="doctorModal" aria-hidden="true">
+        <div class="doctor-modal-backdrop" data-close-doctor-modal></div>
+
+        <section class="doctor-modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="doctorModalName">
+
+            <button class="doctor-modal-close"
+                type="button"
+                aria-label="Close doctor details"
+                data-close-doctor-modal>×</button>
+
+            <div class="doctor-modal-heading">
+                <div class="doctor-modal-avatar" id="doctorModalAvatar">LW</div>
+                <div>
+                    <p class="eyebrow">PRACTITIONER DETAILS</p>
+                    <h2 id="doctorModalName">Doctor name</h2>
+                    <p id="doctorModalRole"></p>
+                </div>
+            </div>
+
+            <p class="doctor-modal-description" id="doctorModalDescription"></p>
+            <div class="doctor-modal-services" id="doctorModalServices"></div>
+
+            <div class="doctor-modal-actions">
+                <a class="doctor-message-link" id="doctorMessageLink" href="messages.html">
+                    Message doctor
+                </a>
+                <button class="doctor-close-button"
+                    type="button"
+                    data-close-doctor-modal>Close</button>
+            </div>
+        </section>
+    </div>
+
     <script src="main.js"></script>
+    <script src="doctor-details.js"></script>
+    <script src="profile-avatar.js"></script>
 </body>
 </html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | Create Account</title>
+    <link rel="stylesheet" href="createaccount.css">
+</head>
+<body>
+    <main class="register-page">
+        <a class="brand" href="login.html">TCM SMARTCARE<span>+</span></a>
+
+        <section class="register-card" aria-labelledby="registerTitle">
+            <div class="register-heading">
+                <p class="eyebrow">PATIENT PORTAL</p>
+                <h1 id="registerTitle">Create your account</h1>
+                <p>Join TCM Smartcare+ to manage your care in one place.</p>
+            </div>
+
+            <form id="createAccountForm" novalidate>
+                <div class="form-grid">
+                    <label class="field full-width" for="fullName">
+                        Full name
+                        <input id="fullName" name="fullName" type="text"
+                            autocomplete="name" placeholder="Enter your full name" required>
+                        <span class="field-error" id="fullNameError"></span>
+                    </label>
+
+                    <label class="field" for="email">
+                        Email address
+                        <input id="email" name="email" type="email"
+                            autocomplete="email" placeholder="name@example.com" required>
+                        <span class="field-error" id="emailError"></span>
+                    </label>
+
+                    <label class="field" for="phone">
+                        Phone number
+                        <input id="phone" name="phone" type="tel"
+                            autocomplete="tel" placeholder="+60 12-345 6789" required>
+                        <span class="field-error" id="phoneError"></span>
+                    </label>
+
+                    <label class="field" for="gender">
+                        Gender
+                        <select id="gender" name="gender" required>
+                            <option value="">Select gender</option>
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                            <option value="non-binary">Non-binary</option>
+                            <option value="prefer-not-to-say">Prefer not to say</option>
+                            <option value="self-describe">I describe myself another way</option>
+                        </select>
+                        <span class="field-error" id="genderError"></span>
+                    </label>
+
+                    <label class="field" for="age">
+                        Age
+                        <input id="age" name="age" type="number"
+                            min="1" max="120" inputmode="numeric" placeholder="Your age" required>
+                        <span class="field-error" id="ageError"></span>
+                    </label>
+
+                    <label class="field" for="password">
+                        Password
+                        <input id="password" name="password" type="password"
+                            autocomplete="new-password" minlength="8"
+                            placeholder="At least 8 characters" required>
+                        <span class="field-hint">Use at least 8 characters.</span>
+                        <span class="field-error" id="passwordError"></span>
+                    </label>
+
+                    <label class="field" for="confirmPassword">
+                        Confirm password
+                        <input id="confirmPassword" name="confirmPassword" type="password"
+                            autocomplete="new-password" minlength="8"
+                            placeholder="Enter your password again" required>
+                        <span class="field-error" id="confirmPasswordError"></span>
+                    </label>
+                </div>
+
+                <label class="consent" for="terms">
+                    <input id="terms" name="terms" type="checkbox" required>
+                    <span>I agree to provide accurate information and to the use of this demo account in this browser.</span>
+                </label>
+                <span class="field-error" id="termsError"></span>
+
+                <button class="create-button" type="submit">Create account</button>
+                <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+
+                <p class="login-prompt">
+                    Already have an account? <a href="login.html">Log in</a>
+                </p>
+            </form>
+        </section>
+
+        <p class="privacy-note">Your account details are saved in this browser for this prototype.</p>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="createaccount.js"></script>
+</body>
+</html>

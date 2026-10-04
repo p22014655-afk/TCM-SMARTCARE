@@ -1,0 +1,141 @@
+.cart-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.back-to-shop {
+    color: #216d70;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.cart-panel {
+    padding: 25px;
+    border: 1px solid #dfe9e7;
+    border-radius: 18px;
+    background: #fff;
+}
+
+.cart-panel h2 {
+    margin-top: 0;
+    color: #183f42;
+}
+
+.cart-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 18px;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid #e7eeee;
+}
+
+.cart-item-details h3 {
+    margin: 0 0 5px;
+    color: #183f42;
+    font-size: 16px;
+}
+
+.cart-item-details p {
+    margin: 0;
+    color: #718788;
+    font-size: 13px;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.quantity-controls button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #b9d5d4;
+    border-radius: 50%;
+    background: #f2f8f8;
+    color: #195e60;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.line-total {
+    min-width: 85px;
+    color: #183f42;
+    text-align: right;
+}
+
+.remove-button {
+    border: 0;
+    background: none;
+    color: #a44f4f;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.cart-summary {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #dfe9e7;
+    color: #183f42;
+}
+
+.checkout-button {
+    display: block;
+    margin-top: 18px;
+    padding: 13px 18px;
+    border-radius: 9px;
+    background: #195e60;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.checkout-button:hover {
+    background: #12494b;
+}
+
+.checkout-button[hidden] {
+    display: none;
+}
+
+.empty-cart {
+    padding: 30px 0;
+    color: #718788;
+    text-align: center;
+}
+
+.empty-cart a {
+    color: #216d70;
+    font-weight: 700;
+}
+
+.cart-note {
+    margin-top: 22px;
+    color: #718788;
+    font-size: 12px;
+}
+
+@media (max-width: 650px) {
+    .cart-item {
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+    }
+
+    .line-total {
+        text-align: left;
+    }
+
+    .remove-button {
+        justify-self: end;
+    }
+
+    .cart-panel {
+        padding: 18px;
+    }
+}

@@ -89,10 +89,11 @@
                             <span>Remember me</span>
                         </label>
 
-                        <a href="#" class="forgot-password">Forgot Password?</a>
+                        <a href="forgotpassword.html" class="forgot-password">Forgot Password?</a>
                     </div>
 
                     <button type="submit">Login</button>
+                    <p class="login-subtitle" id="loginStatus" role="status" aria-live="polite"></p>
 
                     <p class="register-text">
                         Don't have an account?
@@ -388,15 +389,28 @@
     ↑
 </button>
 
+<script src="auth.js"></script>
 <script>
-    // Demo login: connect this handler to your back-end authentication later.
-    document.getElementById("loginForm").addEventListener("submit", function (event) {
+    document.getElementById("loginForm").addEventListener("submit", async function (event) {
         event.preventDefault();
-        const email = document.getElementById("email").value.trim();
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const password = document.getElementById("password").value;
+        const status = document.getElementById("loginStatus");
+        status.textContent = "Checking your account...";
 
-        // Store a friendly name for the dashboard in this static prototype.
-        sessionStorage.setItem("tcmPatientName", email ? email.split("@")[0] : "Patient");
-        window.location.href = "main.html";
+        try {
+            const isValid = await TcmAuth.verifyPassword(email, password);
+            if (!isValid) {
+                status.textContent = "Email or password is incorrect. If needed, use Forgot Password? to set a new password.";
+                return;
+            }
+
+            const profile = JSON.parse(localStorage.getItem("tcmPatientProfile") || "{}");
+            sessionStorage.setItem("tcmPatientName", profile.fullName || email.split("@")[0]);
+            window.location.href = "main.html";
+        } catch {
+            status.textContent = "Could not check your account. Please try again.";
+        }
     });
 
     const backToTopButton = document.getElementById("backToTop");
