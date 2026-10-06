@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | Cart</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="cart.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
+            <p class="portal-label">PATIENT PORTAL</p>
+
+            <nav class="side-nav">
+                <a href="main.html#overview"><span>⌂</span> Overview</a>
+                <a href="main.html#book"><span>＋</span> Book appointment</a>
+                <a href="appointments.html"><span>▣</span> My appointments</a>
+                <a href="wellness.html"><span>♡</span> Wellness plan</a>
+                <a href="shop.html"><span>♧</span> Herbal shop</a>
+                <a class="active" href="cart.html"><span>🛒</span> Cart</a>
+                <a href="messages.html"><span>✉</span> Messages</a>
+                <a href="profile.html"><span>◉</span> My profile</a>
+            </nav>
+
+            <div class="help-card">
+                <span class="help-icon">?</span>
+                <strong>Need assistance?</strong>
+                <p>Our care team is here for you every day.</p>
+                <a href="tel:+6041234567">Call support</a>
+            </div>
+
+            <button class="logout" id="logoutButton">
+                <span>↪</span> Log out
+            </button>
+        </aside>
+
+        <main class="content cart-page">
+            <header class="topbar">
+                <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+
+                <div class="page-title">
+                    <p>TCM SMARTCARE+ MARKET</p>
+                    <h1>Your Cart</h1>
+                </div>
+
+                <a class="back-to-shop" href="shop.html">Continue shopping</a>
+            </header>
+
+            <section class="cart-panel">
+                <h2>Cart items</h2>
+
+                <div id="cartItems"></div>
+
+                <div id="emptyCart" class="empty-cart" hidden>
+                    <p>Your cart is empty.</p>
+                    <a href="shop.html">Browse the shop</a>
+                </div>
+
+                <div class="cart-summary" id="cartSummary">
+                    <span>Subtotal</span>
+                    <strong id="cartTotal">RM 0.00</strong>
+                </div>
+
+                <a class="checkout-button" id="checkoutButton" href="payment.html">
+                    Proceed to payment
+                </a>
+
+                <p class="cart-note">
+                    Sample catalogue only. This page does not process real payments or orders.
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        (() => {
+            const cartKey = "tcmCart";
+            const cartItems = document.getElementById("cartItems");
+            const emptyCart = document.getElementById("emptyCart");
+            const cartSummary = document.getElementById("cartSummary");
+            const checkoutButton = document.getElementById("checkoutButton");
+            const cartTotal = document.getElementById("cartTotal");
+
+            function readCart() {
+                try {
+                    const savedCart = JSON.parse(localStorage.getItem(cartKey) || "[]");
+                    if (!Array.isArray(savedCart)) return [];
+
+                    return savedCart.filter((item) =>
+                        item &&
+                        typeof item.name === "string" &&
+                        Number.isFinite(Number(item.price)) &&
+                        Number.isFinite(Number(item.quantity)) &&
+                        Number(item.quantity) > 0
+                    );
+                } catch {
+                    return [];
+                }
+            }
+
+            function saveCart(cart) {
+                try {
+                    localStorage.setItem(cartKey, JSON.stringify(cart));
+                    renderCart();
+                } catch {
+                    alert("Could not update your cart. Check your browser storage.");
+                }
+            }
+
+            function changeQuantity(index, amount) {
+                const cart = readCart();
+                const item = cart[index];
+
+                if (!item) return;
+
+                item.quantity = Number(item.quantity) + amount;
+
+                if (item.quantity <= 0) {
+                    cart.splice(index, 1);
+                }
+
+                saveCart(cart);
+            }
+
+            function renderCart() {
+                const cart = readCart();
+                cartItems.replaceChildren();
+
+                emptyCart.hidden = cart.length !== 0;
+                cartSummary.hidden = cart.length === 0;
+                checkoutButton.hidden = cart.length === 0;
+
+                cart.forEach((item, index) => {
+                    const row = document.createElement("article");
+                    row.className = "cart-item";
+
+                    const details = document.createElement("div");
+                    details.className = "cart-item-details";
+
+                    const name = document.createElement("h3");
+                    name.textContent = item.name;
+
+                    const price = document.createElement("p");
+                    price.textContent = `RM ${Number(item.price).toFixed(2)} each`;
+
+                    details.append(name, price);
+
+                    const quantity = document.createElement("div");
+                    quantity.className = "quantity-controls";
+
+                    const decrease = document.createElement("button");
+                    decrease.type = "button";
+                    decrease.textContent = "−";
+                    decrease.setAttribute("aria-label", `Decrease ${item.name} quantity`);
+                    decrease.addEventListener("click", () => changeQuantity(index, -1));
+
+                    const quantityText = document.createElement("span");
+                    quantityText.textContent = String(item.quantity);
+
+                    const increase = document.createElement("button");
+                    increase.type = "button";
+                    increase.textContent = "+";
+                    increase.setAttribute("aria-label", `Increase ${item.name} quantity`);
+                    increase.addEventListener("click", () => changeQuantity(index, 1));
+
+                    quantity.append(decrease, quantityText, increase);
+
+                    const lineTotal = document.createElement("strong");
+                    lineTotal.className = "line-total";
+                    lineTotal.textContent =
+                        `RM ${(Number(item.price) * Number(item.quantity)).toFixed(2)}`;
+
+                    const remove = document.createElement("button");
+                    remove.type = "button";
+                    remove.className = "remove-button";
+                    remove.textContent = "Remove";
+                    remove.addEventListener("click", () => {
+                        const updatedCart = readCart();
+                        updatedCart.splice(index, 1);
+                        saveCart(updatedCart);
+                    });
+
+                    row.append(details, quantity, lineTotal, remove);
+                    cartItems.append(row);
+                });
+
+                const total = cart.reduce(
+                    (sum, item) =>
+                        sum + Number(item.price) * Number(item.quantity),
+                    0
+                );
+
+                cartTotal.textContent = `RM ${total.toFixed(2)}`;
+            }
+
+            document.getElementById("menuButton").addEventListener("click", () => {
+                document.querySelector(".sidebar").classList.toggle("open");
+            });
+
+            document.getElementById("logoutButton").addEventListener("click", () => {
+                sessionStorage.removeItem("tcmPatientName");
+                window.location.href = "login.html";
+            });
+
+            window.addEventListener("storage", (event) => {
+                if (event.key === cartKey) renderCart();
+            });
+
+            renderCart();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | Herbal Shop</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
+            <p class="portal-label">PATIENT PORTAL</p>
+
+            <nav class="side-nav">
+                <a href="main.html#overview"><span>⌂</span> Overview</a>
+                <a href="main.html#book"><span>＋</span> Book appointment</a>
+                <a href="appointments.html"><span>▣</span> My appointments</a>
+                <a href="wellness.html"><span>♡</span> Wellness plan</a>
+                <a class="active" href="shop.html"><span>♧</span> Herbal shop</a>
+                <a href="cart.html"><span>🛒</span> Cart</a>
+                <a href="messages.html"><span>✉</span> Messages</a>
+                <a href="profile.html"><span>◉</span> My profile</a>
+            </nav>
+
+            <div class="help-card">
+                <span class="help-icon">?</span>
+                <strong>Need assistance?</strong>
+                <p>Our care team is here for you every day.</p>
+                <a href="tel:+6041234567">Call support</a>
+            </div>
+
+            <button class="logout" id="logoutButton">
+                <span>↪</span> Log out
+            </button>
+        </aside>
+
+        <main class="content shop">
+            <header class="topbar">
+                <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+
+                <div class="page-title">
+                    <p>TCM SMARTCARE+ MARKET</p>
+                    <h1>Herbal &amp; Wellness Shop</h1>
+                </div>
+
+                <a class="cart-link" href="cart.html">
+                    Cart: <span id="cartCount">0</span>
+                </a>
+            </header>
+
+            <section class="shop-hero">
+                <p class="eyebrow">THOUGHTFUL EVERYDAY WELLNESS</p>
+                <h2>Traditional knowledge,<br>clear product details.</h2>
+                <p>
+                    Explore dried herbs, traditional preparations, teas and wellness
+                    essentials. Read ingredient information and ask a qualified
+                    practitioner before choosing products for your needs.
+                </p>
+            </section>
+
+            <section class="catalogue">
+                <div class="catalogue-heading">
+                    <div>
+                        <p class="eyebrow">SHOP BY CATEGORY</p>
+                        <h2>Browse the collection</h2>
+                    </div>
+                    <p>Sample catalogue · Prices in RM</p>
+                </div>
+
+                <div class="shop-tools">
+                    <input
+                        id="search"
+                        type="search"
+                        placeholder="Search products or ingredients..."
+                        aria-label="Search products">
+
+                    <div class="filters">
+                        <button class="active" type="button" data-filter="all">All items</button>
+                        <button type="button" data-filter="herbs">Herbal ingredients</button>
+                        <button type="button" data-filter="tea">Herbal teas</button>
+                        <button type="button" data-filter="supplements">Supplements</button>
+                        <button type="button" data-filter="care">Wellness care</button>
+                    </div>
+                </div>
+
+                <div class="products">
+                    <article class="product"
+                        data-category="herbs"
+                        data-search="goji berry gou qi zi lycium dried fruit">
+                        <div class="product-icon">枸杞</div>
+                        <small>HERBAL INGREDIENT · DRIED FRUIT</small>
+                        <h3>Goji Berry <span>枸杞子</span></h3>
+                        <p>Dried fruit of <i>Lycium barbarum</i>, commonly used in Chinese food and herbal traditions.</p>
+                        <details>
+                            <summary>Ingredient details</summary>
+                            <p>Also called wolfberry. Check the package for botanical identity, origin, ingredients and storage instructions.</p>
+                        </details>
+                        <div class="product-buy">
+                            <strong>RM 18.00 <small>/ 100 g</small></strong>
+                            <div class="product-actions">
+                                <div class="quantity-picker">
+                                    <button class="quantity-minus" type="button" aria-label="Decrease Goji Berry quantity">−</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-plus" type="button" aria-label="Increase Goji Berry quantity">+</button>
+                                </div>
+                                <button class="add-button" type="button">Add to cart</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product"
+                        data-category="herbs"
+                        data-search="jujube hong zao red date ziziphus dried fruit">
+                        <div class="product-icon">红枣</div>
+                        <small>HERBAL INGREDIENT · DRIED FRUIT</small>
+                        <h3>Jujube <span>红枣</span></h3>
+                        <p>Dried jujube fruit (<i>Ziziphus jujuba</i>), used in soups, drinks and cooking.</p>
+                        <details>
+                            <summary>Ingredient details</summary>
+                            <p>Check the ingredient list for added sugar or preservatives and follow package storage instructions.</p>
+                        </details>
+                        <div class="product-buy">
+                            <strong>RM 15.00 <small>/ 200 g</small></strong>
+                            <div class="product-actions">
+                                <div class="quantity-picker">
+                                    <button class="quantity-minus" type="button" aria-label="Decrease Jujube quantity">−</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-plus" type="button" aria-label="Increase Jujube quantity">+</button>
+                                </div>
+                                <button class="add-button" type="button">Add to cart</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product"
+                        data-category="herbs"
+                        data-search="chrysanthemum ju hua flower tea">
+                        <div class="product-icon">菊花</div>
+                        <small>HERBAL INGREDIENT · FLOWER</small>
+                        <h3>Chrysanthemum <span>菊花</span></h3>
+                        <p>Dried chrysanthemum flowers, commonly prepared as an infusion or used in food traditions.</p>
+                        <details>
+                            <summary>Ingredient details</summary>
+                            <p>People with flower allergies should ask a healthcare professional about suitability.</p>
+                        </details>
+                        <div class="product-buy">
+                            <strong>RM 16.00 <small>/ 50 g</small></strong>
+                            <div class="product-actions">
+                                <div class="quantity-picker">
+                                    <button class="quantity-minus" type="button" aria-label="Decrease Chrysanthemum quantity">−</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-plus" type="button" aria-label="Increase Chrysanthemum quantity">+</button>
+                                </div>
+                                <button class="add-button" type="button">Add to cart</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product"
+                        data-category="tea"
+                        data-search="ginger tea sheng jiang ginger drink">
+                        <div class="product-icon">姜茶</div>
+                        <small>HERBAL TEA · BLEND</small>
+                        <h3>Ginger Tea <span>姜茶</span></h3>
+                        <p>A ginger-based drink blend. Review its full label for sugar and other ingredients.</p>
+                        <details>
+                            <summary>Ingredient details</summary>
+                            <p>Ginger (<i>Zingiber officinale</i>) is used as food and in traditional practices. This listing makes no treatment claim.</p>
+                        </details>
+                        <div class="product-buy">
+                            <strong>RM 12.00 <small>/ 10 sachets</small></strong>
+                            <div class="product-actions">
+                                <div class="quantity-picker">
+                                    <button class="quantity-minus" type="button" aria-label="Decrease Ginger Tea quantity">−</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-plus" type="button" aria-label="Increase Ginger Tea quantity">+</button>
+                                </div>
+                                <button class="add-button" type="button">Add to cart</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product"
+                        data-category="supplements"
+                        data-search="vitamin c health supplement">
+                        <div class="product-icon">营养</div>
+                        <small>HEALTH SUPPLEMENT · EXAMPLE</small>
+                        <h3>Daily Vitamin C <span>维生素 C</span></h3>
+                        <p>Example supplement listing. The actual formula, dose and registration details must appear on its label.</p>
+                        <details>
+                            <summary>Product details</summary>
+                            <p>Check directions, warnings, expiry date and registration status for the exact product.</p>
+                        </details>
+                        <div class="product-buy">
+                            <strong>RM 25.00 <small>/ 30 tablets</small></strong>
+                            <div class="product-actions">
+                                <div class="quantity-picker">
+                                    <button class="quantity-minus" type="button" aria-label="Decrease Vitamin C quantity">−</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-plus" type="button" aria-label="Increase Vitamin C quantity">+</button>
+                                </div>
+                                <button class="add-button" type="button">Add to cart</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product"
+                        data-category="care"
+                        data-search="herbal balm external care">
+                        <div class="product-icon">草本</div>
+                        <small>WELLNESS CARE · EXAMPLE</small>
+                        <h3>Herbal Care Balm <span>草本膏</span></h3>
+                        <p>Example topical care product. Confirm the ingredients and permitted use on its actual label.</p>
+                        <details>
+                            <summary>Product details</summary>
+                            <p>Follow the product label. Stop use if irritation occurs. This is not a real product offer.</p>
+                        </details>
+                        <div class="product-buy">
+                            <strong>RM 20.00 <small>/ 20 g</small></strong>
+                            <div class="product-actions">
+                                <div class="quantity-picker">
+                                    <button class="quantity-minus" type="button" aria-label="Decrease Balm quantity">−</button>
+                                    <span class="quantity-value">1</span>
+                                    <button class="quantity-plus" type="button" aria-label="Increase Balm quantity">+</button>
+                                </div>
+                                <button class="add-button" type="button">Add to cart</button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <p id="emptyMessage" class="empty-message" hidden>
+                    No sample products match your search.
+                </p>
+            </section>
+
+            <section class="shop-safety">
+                <div aria-hidden="true">✓</div>
+                <div>
+                    <h2>Know what you’re taking</h2>
+                    <p>
+                        Herbal products can have side effects and may interact with medicines.
+                        Tell your doctor or pharmacist about herbs and supplements you use.
+                        Ask a qualified professional first if you are pregnant, breastfeeding,
+                        managing a health condition or taking prescription medicine.
+                    </p>
+                    <a href="https://www.nccih.nih.gov/health/traditional-chinese-medicine-what-you-need-to-know"
+                        target="_blank" rel="noopener">
+                        Read about traditional Chinese medicine safety (NCCIH)
+                    </a>
+                </div>
+            </section>
+
+            <p class="shop-footer">
+                Product information is educational and does not replace personalized advice from a healthcare professional.
+            </p>
+        </main>
+    </div>
+
+    <script src="shop.js"></script>
+</body>
+</html>

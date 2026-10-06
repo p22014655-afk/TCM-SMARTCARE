@@ -1,0 +1,144 @@
+.card-demo-page {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.back-to-cart {
+    color: #216d70;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.card-demo-panel {
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fff;
+}
+
+.demo-label {
+    display: inline-block;
+    padding: 7px 10px;
+    border-radius: 20px;
+    background: #fff1d8;
+    color: #875d1c;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.card-demo-panel h2 {
+    margin: 17px 0 7px;
+    color: var(--ink);
+    font-size: 21px;
+}
+
+.demo-intro {
+    margin: 0 0 20px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+#cardDemoForm {
+    display: grid;
+    gap: 15px;
+}
+
+#cardDemoForm label {
+    display: grid;
+    gap: 7px;
+    color: #234c4f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#cardDemoForm input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #f7faf9;
+    color: #536d6f;
+    font: inherit;
+    font-size: 13px;
+}
+
+.card-demo-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.card-demo-total {
+    display: flex;
+    margin-top: 4px;
+    padding-top: 16px;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+}
+
+.card-demo-button {
+    min-height: 46px;
+    border: 0;
+    border-radius: 9px;
+    background: #195e60;
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.card-demo-button:hover {
+    background: #12494b;
+}
+
+.card-demo-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.card-demo-status {
+    margin: 0;
+    color: #a33c3c;
+    font-size: 12px;
+}
+
+.card-demo-success {
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 10px;
+    background: #edf7f1;
+    color: #287052;
+}
+
+.card-demo-success[hidden] {
+    display: none;
+}
+
+.card-demo-success h2 {
+    margin: 0 0 8px;
+    font-size: 17px;
+}
+
+.card-demo-success p {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.card-demo-success a {
+    color: #195e60;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+@media (max-width: 560px) {
+    .card-demo-panel {
+        padding: 21px;
+    }
+}

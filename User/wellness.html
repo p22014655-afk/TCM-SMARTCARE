@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | Wellness Assessment</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="wellness.css">
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
+            <p class="portal-label">PATIENT PORTAL</p>
+
+            <nav class="side-nav">
+                <a href="main.html"><span>⌂</span> Overview</a>
+                <a href="main.html#book"><span>＋</span> Book appointment</a>
+                <a href="appointments.html"><span>▣</span> My appointments</a>
+                <a href="wellness.html"><span>♡</span> Wellness plan</a>
+                <a href="shop.html"><span>♧</span> Herbal shop</a>
+                <a href="cart.html"><span>🛒</span> Cart</a>
+                <a href="messages.html"><span>✉</span> Messages</a>
+                <a href="profile.html"><span>◉</span> My profile</a>
+            </nav>
+
+            <div class="help-card">
+                <span class="help-icon">?</span>
+                <strong>Need assistance?</strong>
+                <p>Our care team is here for you every day.</p>
+                <a href="tel:+6041234567">Call support</a>
+            </div>
+
+            <button class="logout" id="logoutButton">
+                <span>↪</span> Log out
+            </button>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+                <div class="page-title">
+                    <p>PERSONAL WELLNESS</p>
+                    <h1>Wellness Assessment</h1>
+                </div>
+                <a class="profile-top-link" href="profile.html" aria-label="Open your profile">
+                    <div class="patient-avatar">JL</div>
+                    <span>
+                        <strong id="patientName">Jamie Lee</strong>
+                        <small>View profile</small>
+                    </span>
+                </a>
+            </header>
+
+            <div class="wellness-page">
+                <section class="wellness-hero">
+                    <p class="eyebrow">A MOMENT FOR YOUR HEALTH</p>
+                    <h2>Tell us how you’ve been feeling</h2>
+                    <p>
+                        Answer these questions about your daily patterns and common
+                        TCM wellness observations. Your summary is for self-reflection
+                        and can help you prepare for a conversation with a practitioner.
+                    </p>
+                </section>
+
+                <form class="wellness-form" id="wellnessForm">
+                    <section class="form-section">
+                        <h3>About you</h3>
+                        <p class="section-hint">This information is optional and helps give your responses context.</p>
+
+                        <label class="form-field">
+                            <span class="field-label">Age range</span>
+                            <select name="age">
+                                <option value="">Prefer not to say</option>
+                                <option>Under 18</option>
+                                <option>18–29</option>
+                                <option>30–44</option>
+                                <option>45–59</option>
+                                <option>60+</option>
+                            </select>
+                        </label>
+
+                        <label class="form-field">
+                            <span class="field-label">How long have you noticed these concerns?</span>
+                            <select name="duration">
+                                <option value="">Choose one</option>
+                                <option>Less than a week</option>
+                                <option>1–4 weeks</option>
+                                <option>1–3 months</option>
+                                <option>More than 3 months</option>
+                                <option>No particular concern</option>
+                            </select>
+                        </label>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>Daily energy and sleep</h3>
+                        <p class="section-hint">Think about what has been typical for you recently.</p>
+
+                        <fieldset class="question">
+                            <legend>How would you describe your energy during the day?</legend>
+                            <div class="choice-grid">
+                                <label class="choice"><input type="radio" name="energy" value="steady"
+                                        required><span>Steady most of the day</span></label>
+                                <label class="choice"><input type="radio" name="energy" value="morning"><span>Low,
+                                        especially in the morning</span></label>
+                                <label class="choice"><input type="radio" name="energy" value="afternoon"><span>Often
+                                        dips in the afternoon</span></label>
+                                <label class="choice"><input type="radio" name="energy" value="variable"><span>Changes a
+                                        lot from day to day</span></label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="question">
+                            <legend>How has your sleep been?</legend>
+                            <div class="choice-grid">
+                                <label class="choice"><input type="radio" name="sleep" value="restful"
+                                        required><span>Restful; I wake refreshed</span></label>
+                                <label class="choice"><input type="radio" name="sleep" value="falling"><span>Hard to
+                                        fall asleep</span></label>
+                                <label class="choice"><input type="radio" name="sleep" value="waking"><span>I wake often
+                                        during the night</span></label>
+                                <label class="choice"><input type="radio" name="sleep" value="unrefreshed"><span>Sleep,
+                                        but wake unrefreshed</span></label>
+                            </div>
+                        </fieldset>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>Digestion and temperature</h3>
+                        <p class="section-hint">These are common topics people discuss in traditional Chinese medicine
+                            consultations.</p>
+
+                        <fieldset class="question">
+                            <legend>How is your appetite and digestion?</legend>
+                            <div class="choice-grid">
+                                <label class="choice"><input type="radio" name="digestion" value="comfortable"
+                                        required><span>Generally comfortable</span></label>
+                                <label class="choice"><input type="radio" name="digestion"
+                                        value="bloating"><span>Bloating or fullness after meals</span></label>
+                                <label class="choice"><input type="radio" name="digestion"
+                                        value="appetite"><span>Appetite is often low or irregular</span></label>
+                                <label class="choice"><input type="radio" name="digestion" value="bowels"><span>Bowel
+                                        habits have changed</span></label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="question">
+                            <legend>Which best describes how you feel about temperature?</legend>
+                            <div class="choice-grid">
+                                <label class="choice"><input type="radio" name="temperature" value="comfortable"
+                                        required><span>Usually comfortable</span></label>
+                                <label class="choice"><input type="radio" name="temperature" value="cold"><span>I often
+                                        feel chilly</span></label>
+                                <label class="choice"><input type="radio" name="temperature" value="warm"><span>I often
+                                        feel warmer than others</span></label>
+                                <label class="choice"><input type="radio" name="temperature" value="both"><span>It
+                                        varies, or my hands and feet differ</span></label>
+                            </div>
+                        </fieldset>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>Stress, mood, and body comfort</h3>
+                        <p class="section-hint">Select the answer that best matches the past two weeks.</p>
+
+                        <fieldset class="question">
+                            <legend>How have stress and mood been?</legend>
+                            <div class="choice-grid">
+                                <label class="choice"><input type="radio" name="mood" value="balanced"
+                                        required><span>Mostly balanced</span></label>
+                                <label class="choice"><input type="radio" name="mood" value="tense"><span>Often tense or
+                                        easily frustrated</span></label>
+                                <label class="choice"><input type="radio" name="mood" value="low"><span>Often low or
+                                        lacking motivation</span></label>
+                                <label class="choice"><input type="radio" name="mood" value="restless"><span>Restless or
+                                        having trouble unwinding</span></label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="question">
+                            <legend>Have you noticed any of these? Select all that apply.</legend>
+                            <div class="symptom-grid">
+                                <label class="choice symptom-choice"><input type="checkbox" name="symptoms"
+                                        value="headache"><span>Recurring headaches</span></label>
+                                <label class="choice symptom-choice"><input type="checkbox" name="symptoms"
+                                        value="neck"><span>Neck or shoulder tightness</span></label>
+                                <label class="choice symptom-choice"><input type="checkbox" name="symptoms"
+                                        value="joint"><span>Joint or muscle discomfort</span></label>
+                                <label class="choice symptom-choice"><input type="checkbox" name="symptoms"
+                                        value="dry"><span>Dry mouth or throat</span></label>
+                                <label class="choice symptom-choice"><input type="checkbox" name="symptoms"
+                                        value="sweating"><span>Unusual sweating</span></label>
+                                <label class="choice symptom-choice"><input type="checkbox" name="symptoms"
+                                        value="none"><span>None of these</span></label>
+                            </div>
+                        </fieldset>
+
+                        <label class="form-field">
+                            <span class="field-label">Anything else you would like to note? (optional)</span>
+                            <textarea name="notes" maxlength="500"
+                                placeholder="For example, when you notice it or what seems to affect it"></textarea>
+                        </label>
+                    </section>
+
+                    <section class="form-section">
+                        <label class="consent-row">
+                            <input type="checkbox" name="consent" required>
+                            <span>I understand this summary is general wellness information, not a medical diagnosis or
+                                a substitute for professional care.</span>
+                        </label>
+                    </section>
+
+                    <div class="form-actions">
+                        <button type="reset" id="resetButton">Clear answers</button>
+                        <button class="submit-button" type="submit">Create my wellness summary</button>
+                    </div>
+                </form>
+
+                <section class="report" id="wellnessReport" aria-live="polite" tabindex="-1">
+                    <p class="eyebrow">YOUR SELF-REFLECTION SUMMARY</p>
+                    <h2 id="reportTitle">Your wellness summary</h2>
+                    <p id="reportIntro"></p>
+                    <div class="report-summary" id="reportSummary"></div>
+                    <div class="report-note" id="reportNote"></div>
+                    <button class="report-print" id="printReport" type="button">Print summary</button>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const savedName = sessionStorage.getItem("tcmPatientName");
+        if (savedName) {
+            document.getElementById("patientName").textContent =
+                savedName.charAt(0).toUpperCase() + savedName.slice(1);
+        }
+
+        const form = document.getElementById("wellnessForm");
+        const report = document.getElementById("wellnessReport");
+
+        function selectedValue(name) {
+            return form.querySelector(`input[name="${name}"]:checked`)?.value || "";
+        }
+
+        function makeReportCard(title, text) {
+            const article = document.createElement("article");
+            const heading = document.createElement("strong");
+            const body = document.createElement("span");
+            heading.textContent = title;
+            body.textContent = text;
+            article.append(heading, body);
+            return article;
+        }
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+
+            const energy = selectedValue("energy");
+            const sleep = selectedValue("sleep");
+            const digestion = selectedValue("digestion");
+            const temperature = selectedValue("temperature");
+            const mood = selectedValue("mood");
+            const symptoms = [...form.querySelectorAll('input[name="symptoms"]:checked')]
+                .map((item) => item.value);
+
+            const summary = document.getElementById("reportSummary");
+            summary.replaceChildren();
+
+            const observations = [];
+
+            if (energy === "steady") {
+                observations.push("You reported generally steady daytime energy.");
+            } else {
+                observations.push("You noted some changes in daytime energy.");
+            }
+
+            if (sleep === "restful") {
+                observations.push("You described your sleep as mostly restful.");
+            } else {
+                observations.push("You noted a sleep pattern you may want to keep track of.");
+            }
+
+            if (digestion === "comfortable") {
+                observations.push("You reported generally comfortable digestion.");
+            } else {
+                observations.push("You noted a digestion or appetite change.");
+            }
+
+            const tcmContext = [];
+            if (temperature === "cold") {
+                tcmContext.push("feeling chilly");
+            } else if (temperature === "warm") {
+                tcmContext.push("feeling warmer than others");
+            } else if (temperature === "both") {
+                tcmContext.push("temperature comfort that varies");
+            }
+
+            if (mood === "tense" || mood === "low" || mood === "restless") {
+                tcmContext.push("stress or mood changes");
+            }
+
+            summary.append(
+                makeReportCard("Your responses", observations.join(" ")),
+                makeReportCard(
+                    "Patterns to discuss",
+                    tcmContext.length
+                        ? `You selected ${tcmContext.join(" and ")}. In a TCM consultation, a practitioner may ask about when these occur and how they relate to your daily routine.`
+                        : "Your temperature and mood responses did not flag a particular pattern in this brief questionnaire."
+                ),
+                makeReportCard(
+                    "Selected body concerns",
+                    symptoms.includes("none") || symptoms.length === 0
+                        ? "You did not select any listed body concerns."
+                        : `${symptoms.length} listed concern${symptoms.length === 1 ? "" : "s"} selected. Note when they happen and share that information with a practitioner if they persist.`
+                )
+            );
+
+            document.getElementById("reportIntro").textContent =
+                "This summary reflects only the answers you entered. TCM practitioners consider a fuller history and assessment before giving individual advice.";
+
+            document.getElementById("reportNote").textContent =
+                "This is not a diagnosis and does not identify a disease or TCM pattern. If a symptom is severe, sudden, worsening, or worrying, contact a qualified healthcare professional. For urgent symptoms, seek emergency care.";
+
+            report.classList.add("show");
+            report.focus();
+            report.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        document.getElementById("resetButton").addEventListener("click", () => {
+            report.classList.remove("show");
+            document.getElementById("reportSummary").replaceChildren();
+        });
+
+        document.getElementById("printReport").addEventListener("click", () => {
+            window.print();
+        });
+
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            sessionStorage.removeItem("tcmPatientName");
+            window.location.href = "login.html";
+        });
+
+        document.getElementById("menuButton").addEventListener("click", () => {
+            document.querySelector(".sidebar").classList.toggle("open");
+        });
+    </script>
+    <script src="profile-avatar.js"></script>
+</body>
+
+</html>

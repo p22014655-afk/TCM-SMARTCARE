@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | My Profile</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
+            <p class="portal-label">PATIENT PORTAL</p>
+
+            <nav class="side-nav">
+                <a href="main.html"><span>⌂</span> Overview</a>
+                <a href="main.html#book"><span>＋</span> Book appointment</a>
+                <a href="appointments.html"><span>▣</span> My appointments</a>
+                <a href="wellness.html"><span>♡</span> Wellness plan</a>
+                <a href="shop.html"><span>♧</span> Herbal shop</a>
+                <a href="cart.html"><span>🛒</span> Cart</a>
+                <a href="messages.html"><span>✉</span> Messages</a>
+                <a href="profile.html"><span>◉</span> My profile</a>
+            </nav>
+
+            <div class="help-card">
+                <span class="help-icon">?</span>
+                <strong>Need assistance?</strong>
+                <p>Our care team is here for you every day.</p>
+                <a href="tel:+6041234567">Call support</a>
+            </div>
+
+            <button class="logout" id="logoutButton">
+                <span>↪</span> Log out
+            </button>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+
+                <div class="page-title">
+                    <p>ACCOUNT SETTINGS</p>
+                    <h1>My Profile</h1>
+                </div>
+
+                <div class="top-actions">
+                    <a class="profile-top-link" href="profile.html" aria-label="Open your profile">
+                        <div class="patient-avatar" id="headerAvatar">JL</div>
+                        <span>
+                            <strong id="headerName">Jamie Lee</strong>
+                            <small>View profile</small>
+                        </span>
+                    </a>
+                </div>
+            </header>
+
+            <div class="profile-page">
+                <section class="profile-intro">
+                    <p class="eyebrow">PERSONAL INFORMATION</p>
+                    <h2>Manage your profile</h2>
+                    <p>Update your contact details and profile picture.</p>
+                </section>
+
+                <form class="profile-card" id="profileForm">
+                    <div class="photo-section">
+                        <img id="profilePreview" class="profile-photo" alt="Profile picture preview">
+                        <div class="photo-controls">
+                            <strong>Profile picture</strong>
+                            <p>Choose a JPG, PNG, or WEBP image up to 2 MB.</p>
+                            <label class="upload-button" for="photoInput">Choose picture</label>
+                            <input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp">
+                            <button type="button" class="remove-photo" id="removePhoto">Remove picture</button>
+                        </div>
+                    </div>
+
+                    <div class="profile-fields">
+                        <label>
+                            Full name
+                            <input id="fullName" name="fullName" type="text" autocomplete="name" required>
+                        </label>
+
+                        <label>
+                            Email address
+                            <input id="email" name="email" type="email" autocomplete="email" required>
+                        </label>
+
+                        <label>
+                            Phone number
+                            <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+60 12-345 6789">
+                        </label>
+
+                        <label>
+                            Date of birth
+                            <input id="birthDate" name="birthDate" type="date" autocomplete="bday">
+                        </label>
+
+                        <label>
+                            Preferred contact method
+                            <select id="contactMethod" name="contactMethod">
+                                <option value="phone">Phone</option>
+                                <option value="email">Email</option>
+                                <option value="sms">SMS</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            Address
+                            <textarea id="address" name="address" rows="3" autocomplete="street-address"
+                                placeholder="Your address (optional)"></textarea>
+                        </label>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="save-button" type="submit">Save profile</button>
+                        <button class="cancel-button" type="reset" id="resetProfile">Reset changes</button>
+                    </div>
+                </form>
+
+                <form class="profile-card password-card" id="passwordForm">
+                    <div>
+                        <p class="eyebrow">SECURITY</p>
+                        <h2>Change password</h2>
+                        <p class="card-description">
+                            Choose a new password with at least 8 characters.
+                        </p>
+                    </div>
+
+                    <label>
+                        Current password
+                        <input type="password" name="currentPassword" autocomplete="current-password" required>
+                    </label>
+
+                    <label>
+                        New password
+                        <input id="newPassword" type="password" name="newPassword" autocomplete="new-password"
+                            minlength="8" required>
+                    </label>
+
+                    <label>
+                        Confirm new password
+                        <input id="confirmPassword" type="password" name="confirmPassword" autocomplete="new-password"
+                            minlength="8" required>
+                    </label>
+
+                    <button class="save-button" type="submit">Update password</button>
+                    <p class="password-note" id="passwordNote" role="status">
+                        Password changes need a secure authentication service.
+                    </p>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div class="profile-toast" id="profileToast" role="status" aria-live="polite"></div>
+
+    <script src="profile.js"></script>
+</body>
+
+</html>

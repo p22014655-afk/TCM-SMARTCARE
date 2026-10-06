@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | Demo Payment</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="demo-payment.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
+            <p class="portal-label">PATIENT PORTAL</p>
+
+            <nav class="side-nav">
+                <a href="main.html"><span>⌂</span> Overview</a>
+                <a href="main.html#book"><span>＋</span> Book appointment</a>
+                <a href="appointments.html"><span>▣</span> My appointments</a>
+                <a href="wellness.html"><span>♡</span> Wellness plan</a>
+                <a href="shop.html"><span>♧</span> Herbal shop</a>
+                <a class="active" href="cart.html"><span>🛒</span> Cart</a>
+                <a href="messages.html"><span>✉</span> Messages</a>
+                <a href="profile.html"><span>◉</span> My profile</a>
+            </nav>
+
+            <div class="help-card">
+                <span class="help-icon">?</span>
+                <strong>Need assistance?</strong>
+                <p>Our care team is here for you every day.</p>
+                <a href="tel:+6041234567">Call support</a>
+            </div>
+        </aside>
+
+        <main class="content demo-payment-page">
+            <header class="topbar">
+                <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+                <div class="page-title">
+                    <p>PAYMENT SIMULATION</p>
+                    <h1 id="pageTitle">Demo payment</h1>
+                </div>
+            </header>
+
+            <section class="demo-payment-card" id="approvalCard">
+                <div class="demo-badge">DEMO ONLY — NO REAL PAYMENT</div>
+                <h2 id="paymentTitle">Review demo payment</h2>
+                <p id="paymentDescription"></p>
+
+                <div class="demo-amount">
+                    <span>Order total</span>
+                    <strong id="demoTotal">RM 0.00</strong>
+                </div>
+
+                <p class="demo-warning" id="demoWarning"></p>
+
+                <div class="demo-actions">
+                    <button class="approve-button" id="approveButton" type="button">
+                        Approve demo payment
+                    </button>
+                    <a class="cancel-button" href="payment.html">Cancel</a>
+                </div>
+            </section>
+
+            <section class="demo-payment-card demo-success" id="successCard" hidden>
+                <div class="success-icon">✓</div>
+                <h2>Demo payment successful</h2>
+                <p id="successText"></p>
+                <a class="approve-button success-link" href="shop.html">Return to shop</a>
+            </section>
+        </main>
+    </div>
+
+    <script src="demo-payment.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+.profile-top-link {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+}
+
+.profile-top-link > span {
+    display: grid;
+    gap: 3px;
+}
+
+.profile-top-link strong {
+    font-size: 13px;
+}
+
+.profile-top-link small {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.profile-top-link:hover strong {
+    color: #247273;
+}
+
+.profile-page {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.profile-intro {
+    margin-bottom: 20px;
+}
+
+.profile-intro h2 {
+    margin: 6px 0;
+    font-size: 23px;
+}
+
+.profile-intro > p:last-child,
+.card-description {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Profile form */
+
+.profile-card {
+    display: grid;
+    gap: 22px;
+    margin-bottom: 20px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff;
+}
+
+.photo-section {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #edf2f1;
+}
+
+/* Large profile picture preview */
+.profile-photo {
+    display: grid;
+    width: 88px;
+    height: 88px;
+    flex: 0 0 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    place-items: center;
+    background: #dceeed;
+    color: #15595b;
+}
+
+/* Small uploaded picture in the top-right header */
+.patient-avatar.profile-image {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.photo-controls p {
+    margin: 5px 0 12px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+#photoInput {
+    display: none;
+}
+
+.upload-button,
+.remove-photo {
+    display: inline-block;
+    margin-right: 7px;
+    padding: 8px 11px;
+    border: 1px solid #bcd6d5;
+    border-radius: 7px;
+    background: #fff;
+    color: #246d6e;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Profile fields */
+
+.profile-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.profile-fields label,
+.password-card label {
+    display: grid;
+    gap: 7px;
+    color: #234c4f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.profile-fields input,
+.profile-fields select,
+.profile-fields textarea,
+.password-card input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #dceae9;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+}
+
+.profile-fields input:focus,
+.profile-fields select:focus,
+.profile-fields textarea:focus,
+.password-card input:focus {
+    outline: 2px solid #8bc5bf;
+    border-color: #4b9792;
+}
+
+.profile-fields label:last-child {
+    grid-column: 1 / -1;
+}
+
+/* Profile form buttons */
+
+.profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    padding-top: 17px;
+    border-top: 1px solid #edf2f1;
+}
+
+.save-button,
+.cancel-button {
+    padding: 11px 15px;
+    border: 1px solid #bcd6d5;
+    border-radius: 8px;
+    background: #fff;
+    color: #246d6e;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.save-button {
+    border-color: #195e60;
+    background: #195e60;
+    color: #fff;
+}
+
+/* Password form */
+
+.password-card h2 {
+    margin: 5px 0 7px;
+    font-size: 19px;
+}
+
+.password-card {
+    max-width: 640px;
+}
+
+.password-note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Save confirmation */
+
+.profile-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 30;
+    padding: 13px 17px;
+    border-radius: 9px;
+    background: #163f41;
+    color: #fff;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: 0.2s ease;
+}
+
+.profile-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Mobile layout */
+
+@media (max-width: 760px) {
+    .profile-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-fields label:last-child {
+        grid-column: auto;
+    }
+
+    .profile-card {
+        padding: 18px;
+    }
+
+    .profile-photo {
+        width: 72px;
+        height: 72px;
+        flex-basis: 72px;
+    }
+}

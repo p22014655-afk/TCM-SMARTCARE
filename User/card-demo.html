@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM Smartcare+ | Demo Card Payment</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="card-demo.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="main.html">TCM SMARTCARE<span>+</span></a>
+            <p class="portal-label">PATIENT PORTAL</p>
+
+            <nav class="side-nav">
+                <a href="main.html"><span>⌂</span> Overview</a>
+                <a href="main.html#book"><span>＋</span> Book appointment</a>
+                <a href="appointments.html"><span>▣</span> My appointments</a>
+                <a href="wellness.html"><span>♡</span> Wellness plan</a>
+                <a href="shop.html"><span>♧</span> Herbal shop</a>
+                <a class="active" href="cart.html"><span>🛒</span> Cart</a>
+                <a href="messages.html"><span>✉</span> Messages</a>
+                <a href="profile.html"><span>◉</span> My profile</a>
+            </nav>
+
+            <div class="help-card">
+                <span class="help-icon">?</span>
+                <strong>Need assistance?</strong>
+                <p>Our care team is here for you every day.</p>
+                <a href="tel:+6041234567">Call support</a>
+            </div>
+        </aside>
+
+        <main class="content card-demo-page">
+            <header class="topbar">
+                <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+
+                <div class="page-title">
+                    <p>PAYMENT SIMULATION</p>
+                    <h1>Card payment</h1>
+                </div>
+
+                <a class="back-to-cart" href="payment.html">Back to payment</a>
+            </header>
+
+            <section class="card-demo-panel">
+                <span class="demo-label">DEMO ONLY — NO REAL CARD PAYMENT</span>
+                <h2>Example card form</h2>
+                <p class="demo-intro">
+                    These are read-only sample values. This page does not accept,
+                    store, or send real card information.
+                </p>
+
+                <form id="cardDemoForm">
+                    <label>
+                        Name on card
+                        <input type="text" value="Demo Patient" readonly>
+                    </label>
+
+                    <label>
+                        Card number
+                        <input type="text" value="•••• •••• •••• 4242" readonly>
+                    </label>
+
+                    <div class="card-demo-row">
+                        <label>
+                            Expiry date
+                            <input type="text" value="12 / 30" readonly>
+                        </label>
+
+                        <label>
+                            Security code
+                            <input type="text" value="•••" readonly>
+                        </label>
+                    </div>
+
+                    <div class="card-demo-total">
+                        <span>Order total</span>
+                        <strong id="cardDemoTotal">RM 0.00</strong>
+                    </div>
+
+                    <button class="card-demo-button" id="cardDemoButton" type="submit">
+                        Confirm payment
+                    </button>
+
+                    <p class="card-demo-status" id="cardDemoStatus" role="status" aria-live="polite"></p>
+                </form>
+
+                <div class="card-demo-success" id="cardDemoSuccess" hidden>
+                    <h2>Demo payment successful</h2>
+                    <p id="cardDemoSuccessMessage"></p>
+                    <a href="shop.html">Return to shop</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="card-demo.js"></script>
+</body>
+</html>

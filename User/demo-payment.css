@@ -1,0 +1,127 @@
+.demo-payment-page {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.demo-payment-card {
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fff;
+}
+
+.demo-badge {
+    display: inline-block;
+    padding: 7px 10px;
+    border-radius: 20px;
+    background: #fff1d8;
+    color: #875d1c;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.demo-payment-card h2 {
+    margin: 18px 0 8px;
+    color: var(--ink);
+    font-size: 22px;
+}
+
+.demo-payment-card > p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.demo-amount {
+    display: flex;
+    margin: 22px 0;
+    padding: 17px 0;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+}
+
+.demo-warning {
+    padding: 12px;
+    border-radius: 9px;
+    background: #f3f8f7;
+}
+
+.demo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.approve-button,
+.cancel-button {
+    display: inline-block;
+    padding: 12px 16px;
+    border: 1px solid #195e60;
+    border-radius: 9px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.approve-button {
+    background: #195e60;
+    color: #fff;
+}
+
+.approve-button:hover {
+    background: #12494b;
+}
+
+.approve-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.cancel-button {
+    background: #fff;
+    color: #246d6e;
+}
+
+.demo-success {
+    text-align: center;
+}
+
+.demo-success[hidden] {
+    display: none;
+}
+
+.success-icon {
+    display: grid;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto;
+    border-radius: 50%;
+    place-items: center;
+    background: #e1f2e9;
+    color: #277052;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.success-link {
+    margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+    .demo-payment-card {
+        padding: 21px;
+    }
+
+    .demo-actions {
+        display: grid;
+    }
+}

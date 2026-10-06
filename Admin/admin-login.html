@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCM SmartCare+ | Admin Login</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-login-page" data-page="login">
+    <main class="login-card">
+        <section class="login-intro">
+            <div class="admin-logo">TCM SMARTCARE<span>+</span></div>
+            <h1>Clinic Management Portal</h1>
+            <p>Manage appointments, patient flow, product stock, orders, messages, and doctor care plans from one staff portal.</p>
+        </section>
+
+        <section class="login-panel">
+            <h2>Admin / Doctor Login</h2>
+            <p>Use your staff ID or clinic email to continue.</p>
+
+            <form id="adminLoginForm" novalidate>
+                <label class="field">
+                    <span>Staff ID / Email</span>
+                    <input id="identifier" type="text" autocomplete="username" required>
+                </label>
+
+                <label class="field">
+                    <span>Password</span>
+                    <div class="password-row">
+                        <input id="password" type="password" autocomplete="current-password" required>
+                        <button class="text-button" id="togglePassword" type="button">Show</button>
+                    </div>
+                </label>
+
+                <div class="login-options">
+                    <label><input type="checkbox" id="rememberLogin"> Remember login</label>
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button class="primary-btn" type="submit">Login</button>
+                <p class="form-status" id="loginStatus" role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="demo-login">
+                <strong>Quick Demo Login</strong>
+                <label class="field" style="margin-top:12px">
+                    <span>Select Role</span>
+                    <select id="demoRole">
+                        <option value="">Select Role</option>
+                        <option value="staff">Front Desk Staff</option>
+                        <option value="doctor">Dr. Lim Wei Ming</option>
+                    </select>
+                </label>
+                <div class="demo-buttons">
+                    <button class="secondary-btn" type="button" data-demo-login="staff">Login as Staff</button>
+                    <button class="secondary-btn" type="button" data-demo-login="doctor">Login as Doctor</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="admin-data.js"></script>
+    <script src="admin-utils.js"></script>
+    <script src="admin-auth.js"></script>
+    <script src="admin-app.js"></script>
+</body>
+</html>
