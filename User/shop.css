@@ -126,6 +126,11 @@
     font-size: 32px;
 }
 
+.product-icon.product-photo {
+    width: 100%;
+    object-fit: cover;
+}
+
 .product > small {
     color: #628080;
     font-weight: 700;
@@ -156,6 +161,28 @@
 .product summary {
     cursor: pointer;
     font-weight: 700;
+}
+
+.product-detail {
+    margin-top: 10px;
+}
+
+.product-detail strong {
+    display: block;
+    color: #183f42;
+}
+
+.product-detail p,
+.staff-product-description {
+    white-space: pre-line;
+}
+
+.staff-product-description {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .product-buy {

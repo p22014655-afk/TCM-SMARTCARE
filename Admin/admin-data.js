@@ -299,7 +299,31 @@
                 messages: [{ from: "patient", text: "Thank you for the appointment confirmation.", time: "Yesterday" }]
             }
         ],
-        carePlans: [],
+        carePlans: [
+            {
+                id: "CARE-001",
+                appointmentId: "APT-001",
+                patientId: "PAT-001",
+                doctorId: "dr-lim",
+                status: "Saved",
+                createdAt: "2026-10-06T09:20:00.000Z",
+                notes: {
+                    notes: "Neck and shoulder tightness with sleep difficulty. Advise warm compress and posture breaks.",
+                    wang: "Pale tongue, slight teeth marks",
+                    wen: "Shoulder tension after desk work",
+                    questioning: "Sleep interrupted, stress high",
+                    qie: "Pulse wiry",
+                    recommendation: "Gentle stretching, reduce cold drinks, review sleep in follow-up.",
+                    productId: "PROD-002",
+                    quantity: "2 packs",
+                    daysSupply: "7 days",
+                    usage: "Drink once daily after meals",
+                    productNotes: "Ginseng Tea for short-term support.",
+                    followUp: "7 days",
+                    followUpDate: ""
+                }
+            }
+        ],
         feedback: [
             {
                 id: "FDB-001",

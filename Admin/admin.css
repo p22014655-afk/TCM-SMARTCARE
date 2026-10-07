@@ -527,6 +527,32 @@ textarea {
     grid-column: 1 / -1;
 }
 
+.product-photo-preview {
+    display: block;
+    width: min(100%, 240px);
+    height: 140px;
+    border: 1px solid var(--admin-line);
+    border-radius: 8px;
+    object-fit: contain;
+    background: #f5f8f5;
+}
+
+.product-photo-empty,
+.form-grid label small {
+    color: var(--admin-muted);
+    font-size: 12px;
+}
+
+.form-grid .product-photo-remove {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.product-photo-remove input {
+    width: auto;
+}
+
 .calendar-grid {
     display: grid;
     grid-template-columns: 80px repeat(5, 1fr);
@@ -1548,6 +1574,10 @@ body {
 
 .patient-directory .table-toolbar {
     grid-template-columns: minmax(240px, 1.6fr) 1fr 1fr;
+}
+
+.care-selector .table-toolbar {
+    grid-template-columns: minmax(240px, 1.6fr) repeat(3, minmax(130px, 1fr));
 }
 
 .selected-row td {

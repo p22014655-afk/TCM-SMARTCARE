@@ -48,7 +48,7 @@
         showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2600);
     }
 
-    function openModal(title, body, footer = "") {
+    function openModal(title, body, footer = "", options = {}) {
         closeModal();
         const wrapper = document.createElement("div");
         wrapper.className = "admin-modal";
@@ -63,7 +63,7 @@
         document.body.append(wrapper);
         wrapper.querySelector(".modal-close").addEventListener("click", closeModal);
         wrapper.addEventListener("click", (event) => {
-            if (event.target === wrapper) closeModal();
+            if (event.target === wrapper && options.closeOnBackdrop !== false) closeModal();
         });
     }
 

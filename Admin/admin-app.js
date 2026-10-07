@@ -30,6 +30,32 @@
         return document.getElementById(id);
     }
 
+    function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#39;"
+        })[character]);
+    }
+
+    function productCategories(products) {
+        const categories = ["Bird's Nest", "Ginseng", "Herbal Tea", "Wellness"];
+        const seen = new Set(categories.map((category) => category.toLowerCase()));
+
+        products.forEach((product) => {
+            const category = String(product.category || "").trim();
+            const normalized = category.toLowerCase();
+            if (category && !seen.has(normalized)) {
+                categories.push(category);
+                seen.add(normalized);
+            }
+        });
+
+        return categories;
+    }
+
     function doctorName(doctorId, state = data()) {
         return state.doctors.find((doctor) => doctor.id === doctorId)?.name || "Doctor";
     }
@@ -728,19 +754,106 @@
         `);
     }
 
+    function latestCarePlan(state, appointmentId) {
+        return state.carePlans
+            .filter((plan) => plan.appointmentId === appointmentId)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+    }
+
+    function carePlanProductName(state, productId) {
+        return state.products.find((product) => product.id === productId)?.name || "Not selected";
+    }
+
     function renderCarePlan() {
+        const user = current();
+        const state = data();
+        const params = new URLSearchParams(location.search);
+        const doctorOptions = user.role === "doctor"
+            ? `<option value="${user.id}">My Appointments</option>`
+            : `<option value="">All Doctors</option>${state.doctors.map((doctor) => `<option value="${doctor.id}">${doctor.name}</option>`).join("")}`;
+        const visibleAppointments = state.appointments.filter((item) => user.role !== "doctor" || item.doctorId === user.id);
+        const selected = visibleAppointments.find((item) => item.id === params.get("appointment")) || visibleAppointments[0];
+
+        byId("adminPage").innerHTML = `
+            <section class="panel care-selector">
+                <div class="panel-header">
+                    <div><h2>Care Plan</h2><p>${user.role === "doctor" ? "Select a patient appointment to write or update the care plan." : "Select a patient appointment to view the doctor's care plan."}</p></div>
+                    <span>${visibleAppointments.length} records</span>
+                </div>
+                <div class="table-toolbar">
+                    <label class="toolbar-search"><input id="careSearch" placeholder="Search patient or appointment ID"></label>
+                    <label><select id="careDoctor" ${user.role === "doctor" ? "disabled" : ""}>${doctorOptions}</select></label>
+                    <label><select id="careService"><option value="">All Services</option><option>TCM Consultation</option><option>Acupuncture</option><option>Cupping</option><option>Herbal Medicine</option></select></label>
+                    <label><select id="careStatus"><option value="">All Statuses</option><option>Draft</option><option>Saved</option><option>Completed</option><option>No care plan</option></select></label>
+                </div>
+                <div id="carePlanList"></div>
+            </section>
+            <div id="carePlanDetail" style="margin-top:18px"></div>
+        `;
+
+        if (user.role === "doctor") byId("careDoctor").value = user.id;
+        ["careSearch", "careDoctor", "careService", "careStatus"].forEach((id) => byId(id).addEventListener("input", () => drawCarePlanList()));
+        drawCarePlanList(selected?.id);
+    }
+
+    function filteredCareAppointments() {
+        const user = current();
+        const state = data();
+        const query = (byId("careSearch")?.value || "").toLowerCase();
+        const doctorFilter = user.role === "doctor" ? user.id : byId("careDoctor")?.value;
+        const serviceFilter = byId("careService")?.value;
+        const statusFilter = byId("careStatus")?.value;
+        return state.appointments.filter((item) => {
+            const plan = latestCarePlan(state, item.id);
+            const planStatus = plan?.status || "No care plan";
+            return (user.role !== "doctor" || item.doctorId === user.id) &&
+                (!query || `${item.id} ${item.patient} ${item.contact}`.toLowerCase().includes(query)) &&
+                (!doctorFilter || item.doctorId === doctorFilter) &&
+                (!serviceFilter || item.service === serviceFilter) &&
+                (!statusFilter || planStatus === statusFilter);
+        });
+    }
+
+    function drawCarePlanList(selectedId) {
+        const state = data();
+        const records = filteredCareAppointments();
+        const selected = records.find((item) => item.id === selectedId) || records[0];
+        byId("carePlanList").innerHTML = table(
+            ["Patient / Contact", "Service", "Date / Time", "Doctor / Room", "Care Plan", "Actions"],
+            records.map((item) => {
+                const plan = latestCarePlan(state, item.id);
+                return `
+                    <tr class="${selected?.id === item.id ? "selected-row" : ""}">
+                        <td><div class="person-cell">${patientAvatar(item.patient)}<span><strong>${item.patient}</strong><small>${item.id}<br>${item.contact}</small></span></div></td>
+                        <td>${item.service}</td>
+                        <td><strong>${shortDate(item.date)}</strong><br><small>${formatTime(item.time)}</small></td>
+                        <td>${item.doctor}<br><small>${item.room}</small></td>
+                        <td>${badge(plan?.status || "No care plan")}</td>
+                        <td><button class="text-link" data-select-care="${item.id}">${selected?.id === item.id ? "Selected" : "View"}</button></td>
+                    </tr>
+                `;
+            })
+        );
+        document.querySelectorAll("[data-select-care]").forEach((button) => button.addEventListener("click", () => {
+            drawCarePlanList(button.dataset.selectCare);
+        }));
+        drawCarePlanDetail(selected);
+    }
+
+    function drawCarePlanDetail(appointment) {
         const state = data();
         const user = current();
-        const params = new URLSearchParams(location.search);
-        const appointment = state.appointments.find((item) => item.id === params.get("appointment")) ||
-            state.appointments.find((item) => user.role !== "doctor" || item.doctorId === user.id);
+        const panel = byId("carePlanDetail");
+        if (!panel) return;
         if (!appointment) {
-            byId("adminPage").innerHTML = `<section class="panel"><h2>No appointment selected</h2></section>`;
+            panel.innerHTML = `<section class="panel"><h2>No appointment selected</h2><p>No matching appointment found for the current filters.</p></section>`;
             return;
         }
         const patient = state.patients.find((item) => item.id === appointment.patientId);
-        const pre = patient.preConsultation;
-        byId("adminPage").innerHTML = `
+        const pre = patient?.preConsultation || {};
+        const plan = latestCarePlan(state, appointment.id);
+        const notes = plan?.notes || {};
+        panel.innerHTML = `
             <div class="care-header">
                 <div><strong>Patient</strong><br>${patient.name}</div><div><strong>Appointment</strong><br>${appointment.id}</div><div><strong>Service</strong><br>${appointment.service}</div><div><strong>Status</strong><br>${badge(appointment.status)}</div>
             </div>
@@ -750,35 +863,78 @@
                     ${["energy", "sleep", "digestion", "temperature", "mood", "concerns", "notes"].map((key) => `<div class="pre-card"><strong>${key}</strong>${pre[key] || "Not submitted"}</div>`).join("")}
                 </div>
             </section>
+            ${user.role === "doctor" ? carePlanForm(state, appointment, notes) : carePlanReadOnly(state, plan)}
+        `;
+        if (user.role === "doctor") bindCarePlanForm(appointment, patient);
+    }
+
+    function carePlanForm(state, appointment, notes) {
+        return `
             <section class="panel" style="margin-top:18px">
                 <h2>Doctor Consultation</h2>
                 <form class="form-grid" id="carePlanForm">
-                    <label class="full"><span>Doctor Notes</span><textarea name="notes" rows="5"></textarea></label>
-                    <label><span>Wang</span><input name="wang"></label><label><span>Wen</span><input name="wen"></label>
-                    <label><span>Wen Questions</span><input name="questioning"></label><label><span>Qie</span><input name="qie"></label>
-                    <label class="full"><span>Care Recommendation</span><textarea name="recommendation" rows="4"></textarea></label>
-                    <label><span>Herbal Wellness Product</span><select name="productId"><option value="">Select Product</option>${state.products.filter((item) => item.status === "Active").map((item) => `<option value="${item.id}">${item.name}</option>`).join("")}</select></label>
-                    <label><span>Usage</span><input name="usage"></label>
-                    <label class="full"><span>Additional Notes</span><textarea name="productNotes" rows="3"></textarea></label>
-                    <label><span>Follow-up Recommendation</span><select name="followUp"><option>No follow-up</option><option>7 days</option><option>14 days</option><option>30 days</option><option>Custom date</option></select></label>
-                    <label><span>Custom Date</span><input type="date" name="followUpDate"></label>
+                    <label class="full"><span>Doctor Notes</span><textarea name="notes" rows="5">${notes.notes || ""}</textarea></label>
+                    <label><span>Wang</span><input name="wang" value="${notes.wang || ""}"></label><label><span>Wen</span><input name="wen" value="${notes.wen || ""}"></label>
+                    <label><span>Wen Questions</span><input name="questioning" value="${notes.questioning || ""}"></label><label><span>Qie</span><input name="qie" value="${notes.qie || ""}"></label>
+                    <label class="full"><span>Care Recommendation</span><textarea name="recommendation" rows="4">${notes.recommendation || ""}</textarea></label>
+                    <label><span>Herbal Wellness Product</span><select name="productId"><option value="">Select Product</option>${state.products.filter((item) => item.status === "Active").map((item) => `<option value="${item.id}" ${notes.productId === item.id ? "selected" : ""}>${item.name}</option>`).join("")}</select></label>
+                    <label><span>Quantity / Amount</span><input name="quantity" placeholder="e.g. 2 packs" value="${notes.quantity || ""}"></label>
+                    <label><span>Days Supply</span><input name="daysSupply" placeholder="e.g. 7 days" value="${notes.daysSupply || ""}"></label>
+                    <label><span>Usage</span><input name="usage" value="${notes.usage || ""}"></label>
+                    <label class="full"><span>Additional Notes</span><textarea name="productNotes" rows="3">${notes.productNotes || ""}</textarea></label>
+                    <label><span>Follow-up Recommendation</span><select name="followUp">${["No follow-up", "7 days", "14 days", "30 days", "Custom date"].map((item) => `<option ${notes.followUp === item ? "selected" : ""}>${item}</option>`).join("")}</select></label>
+                    <label><span>Custom Date</span><input type="date" name="followUpDate" value="${notes.followUpDate || ""}"></label>
                     <label class="full"><button class="secondary-btn" type="button" id="saveDraft">Save Draft</button> <button class="primary-btn" type="submit">Save Care Plan</button> <button class="secondary-btn" type="button" id="printCarePlan">Print Care Plan</button> <button class="danger-btn" type="button" id="completeConsultation">Complete Consultation</button></label>
                 </form>
             </section>
         `;
+    }
+
+    function carePlanReadOnly(state, plan) {
+        const notes = plan?.notes || {};
+        if (!plan) {
+            return `<section class="panel" style="margin-top:18px"><h2>Doctor Care Plan</h2><p>No care plan has been saved for this appointment yet.</p></section>`;
+        }
+        return `
+            <section class="panel" style="margin-top:18px">
+                <div class="selected-head"><h2>Doctor Care Plan</h2>${badge(plan.status)}</div>
+                <dl class="detail-grid">
+                    <div><dt>Doctor Notes</dt><dd>${notes.notes || "Not recorded"}</dd></div>
+                    <div><dt>Care Recommendation</dt><dd>${notes.recommendation || "Not recorded"}</dd></div>
+                    <div><dt>Herbal Product</dt><dd>${carePlanProductName(state, notes.productId)}</dd></div>
+                    <div><dt>Quantity / Days</dt><dd>${notes.quantity || "Not recorded"} / ${notes.daysSupply || "Not recorded"}</dd></div>
+                    <div><dt>Usage</dt><dd>${notes.usage || "Not recorded"}</dd></div>
+                    <div><dt>Follow-up</dt><dd>${notes.followUp || "No follow-up"} ${notes.followUpDate ? `- ${shortDate(notes.followUpDate)}` : ""}</dd></div>
+                    <div><dt>Wang / Wen</dt><dd>${notes.wang || "Not recorded"} / ${notes.wen || "Not recorded"}</dd></div>
+                    <div><dt>Wen Questions / Qie</dt><dd>${notes.questioning || "Not recorded"} / ${notes.qie || "Not recorded"}</dd></div>
+                    <div><dt>Additional Notes</dt><dd>${notes.productNotes || "Not recorded"}</dd></div>
+                </dl>
+            </section>
+        `;
+    }
+
+    function bindCarePlanForm(appointment, patient) {
         function savePlan(status) {
+            const state = data();
             const formData = new FormData(byId("carePlanForm"));
-            state.carePlans.push({
-                id: generateID("CARE"),
+            const existing = latestCarePlan(state, appointment.id);
+            const nextPlan = {
+                id: existing?.id || generateID("CARE"),
                 appointmentId: appointment.id,
                 patientId: patient.id,
                 doctorId: appointment.doctorId,
                 status,
                 createdAt: new Date().toISOString(),
                 notes: Object.fromEntries(formData.entries())
-            });
+            };
+            if (existing) {
+                state.carePlans = state.carePlans.map((plan) => plan.id === existing.id ? nextPlan : plan);
+            } else {
+                state.carePlans.push(nextPlan);
+            }
             save(state);
             showToast(status === "Draft" ? "Draft saved." : "Care plan saved.");
+            drawCarePlanList(appointment.id);
         }
         byId("saveDraft").addEventListener("click", () => savePlan("Draft"));
         byId("carePlanForm").addEventListener("submit", (event) => {
@@ -787,16 +943,17 @@
         });
         byId("printCarePlan").addEventListener("click", () => window.print());
         byId("completeConsultation").addEventListener("click", () => {
-            appointment.status = "Completed";
-            savePlan("Completed");
+            const state = data();
+            const item = state.appointments.find((record) => record.id === appointment.id);
+            if (item) item.status = "Completed";
             save(state);
+            savePlan("Completed");
             showToast("Consultation completed.");
         });
     }
 
     function renderProducts() {
-        const state = data();
-        byId("adminPage").innerHTML = `<section class="panel"><div class="panel-header"><h2>Herbal Store Management</h2><button class="primary-btn" id="addProduct">+ Add Product</button></div><div class="table-toolbar"><label>Search Product<input id="productSearch"></label><label>Category<select id="productCategory"><option value="">All</option><option>Bird's Nest</option><option>Ginseng</option><option>Herbal Tea</option><option>Wellness</option></select></label><label>Status<select id="productStatus"><option value="">All</option><option>Active</option><option>Inactive</option><option>Out of Stock</option><option>Low Stock</option></select></label></div><div id="productTable"></div></section>`;
+        byId("adminPage").innerHTML = `<section class="panel"><div class="panel-header"><h2>Herbal Store Management</h2><button class="primary-btn" id="addProduct">+ Add Product</button></div><div class="table-toolbar"><label>Search Product<input id="productSearch"></label><label>Category<select id="productCategory"><option value="">All</option></select></label><label>Status<select id="productStatus"><option value="">All</option><option>Active</option><option>Inactive</option><option>Out of Stock</option><option>Low Stock</option></select></label></div><div id="productTable"></div></section>`;
         ["productSearch", "productCategory", "productStatus"].forEach((id) => byId(id).addEventListener("input", drawProducts));
         byId("addProduct").addEventListener("click", () => openProductForm());
         drawProducts();
@@ -805,7 +962,11 @@
     function drawProducts() {
         const state = data();
         const query = byId("productSearch").value.toLowerCase();
-        const category = byId("productCategory").value;
+        const categorySelect = byId("productCategory");
+        const selectedCategory = categorySelect.value;
+        categorySelect.innerHTML = `<option value="">All</option>${productCategories(state.products).map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("")}`;
+        categorySelect.value = selectedCategory;
+        const category = categorySelect.value;
         const status = byId("productStatus").value;
         const rows = state.products.filter((item) => {
             const computedStatus = item.stock <= 0 ? "Out of Stock" : item.stock <= item.lowStockThreshold ? "Low Stock" : item.status;
@@ -840,33 +1001,109 @@
 
     function openProductForm(id) {
         const state = data();
-        const item = state.products.find((product) => product.id === id) || { id: "", name: "", category: "Bird's Nest", description: "", price: "", stock: "", lowStockThreshold: 5, image: "", status: "Active" };
+        const item = state.products.find((product) => product.id === id) || { id: "", name: "", category: "Bird's Nest", description: "", ingredients: "", instructions: "", precautions: "", price: "", stock: "", lowStockThreshold: 5, image: "", status: "Active" };
+        const categorySuggestions = productCategories(state.products)
+            .map((category) => `<option value="${escapeHtml(category)}"></option>`)
+            .join("");
+        const imagePreview = item.image
+            ? `<img class="product-photo-preview" id="productPhotoPreview" src="${escapeHtml(item.image)}" alt="Current product photo">`
+            : `<p class="product-photo-empty" id="productPhotoEmpty">No photo selected.</p>`;
         openModal(id ? "Edit Product" : "Add Product", `
             <form class="form-grid" id="productForm">
-                <label><span>Product Name</span><input name="name" value="${item.name}" required></label>
-                <label><span>Category</span><select name="category"><option>Bird's Nest</option><option>Ginseng</option><option>Herbal Tea</option><option>Wellness</option></select></label>
-                <label class="full"><span>Description</span><textarea name="description" rows="3">${item.description}</textarea></label>
+                <label><span>Product Name</span><input name="name" value="${escapeHtml(item.name)}" required></label>
+                <label><span>Category</span><input name="category" value="${escapeHtml(item.category)}" list="productCategorySuggestions" required><datalist id="productCategorySuggestions">${categorySuggestions}</datalist></label>
+                <label class="full"><span>Description</span><textarea name="description" rows="3">${escapeHtml(item.description)}</textarea></label>
+                <label class="full"><span>Ingredients (Gram Measurements)</span><textarea name="ingredients" rows="3" placeholder="List each ingredient and its amount in grams">${escapeHtml(item.ingredients)}</textarea></label>
+                <label class="full"><span>Instructions</span><textarea name="instructions" rows="3" placeholder="How to prepare or use this product">${escapeHtml(item.instructions)}</textarea></label>
+                <label class="full"><span>Precautions</span><textarea name="precautions" rows="3" placeholder="Warnings, allergies, or who should avoid this product">${escapeHtml(item.precautions)}</textarea></label>
                 <label><span>Price</span><input type="number" name="price" min="0" step="0.01" value="${item.price}" required></label>
                 <label><span>Stock Quantity</span><input type="number" name="stock" min="0" value="${item.stock}" required></label>
                 <label><span>Low Stock Threshold</span><input type="number" name="lowStockThreshold" min="0" value="${item.lowStockThreshold}" required></label>
-                <label><span>Image URL</span><input name="image" value="${item.image}"></label>
+                <label class="full"><span>Product Photo</span><input id="productPhoto" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small>Choose PNG, JPEG, WebP or GIF, up to 1 MB.</small>${imagePreview}</label>
+                ${item.image ? `<label class="full product-photo-remove"><input name="removeImage" type="checkbox"><span>Remove current photo when saving</span></label>` : ""}
                 <label><span>Status</span><select name="status"><option>Active</option><option>Inactive</option></select></label>
             </form>
-        `, `<button class="primary-btn" id="saveProduct">Save Product</button>`);
-        byId("productForm").category.value = item.category;
+        `, `<button class="primary-btn" id="saveProduct">Save Product</button>`, { closeOnBackdrop: false });
         byId("productForm").status.value = item.status;
-        byId("saveProduct").addEventListener("click", () => {
+        let selectedImage = item.image || "";
+        const photoInput = byId("productPhoto");
+        const saveButton = byId("saveProduct");
+
+        photoInput.addEventListener("change", () => {
+            const file = photoInput.files[0];
+            if (!file) return;
+
+            const supportedTypes = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+            if (!supportedTypes.includes(file.type)) {
+                photoInput.value = "";
+                showToast("Choose a PNG, JPEG, WebP or GIF image.");
+                return;
+            }
+
+            if (file.size > 1024 * 1024) {
+                photoInput.value = "";
+                showToast("Choose an image smaller than 1 MB.");
+                return;
+            }
+
+            saveButton.disabled = true;
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+                if (typeof reader.result !== "string") {
+                    showToast("Could not read this image. Please choose another file.");
+                    saveButton.disabled = false;
+                    return;
+                }
+
+                selectedImage = reader.result;
+                let preview = byId("productPhotoPreview");
+                if (!preview) {
+                    preview = document.createElement("img");
+                    preview.className = "product-photo-preview";
+                    preview.id = "productPhotoPreview";
+                    preview.alt = "Selected product photo";
+                    byId("productPhotoEmpty")?.replaceWith(preview);
+                }
+                preview.src = selectedImage;
+                byId("productForm").elements.removeImage && (byId("productForm").elements.removeImage.checked = false);
+                saveButton.disabled = false;
+            });
+            reader.addEventListener("error", () => {
+                console.error("Could not read selected product photo.", reader.error);
+                photoInput.value = "";
+                saveButton.disabled = false;
+                showToast("Could not read this image. Please choose another file.");
+            });
+            reader.readAsDataURL(file);
+        });
+
+        saveButton.addEventListener("click", () => {
             const form = byId("productForm");
             if (!form.reportValidity()) return;
             const formData = Object.fromEntries(new FormData(form).entries());
-            const payload = { ...item, ...formData, price: Number(formData.price), stock: Number(formData.stock), lowStockThreshold: Number(formData.lowStockThreshold), updatedAt: "2026-10-06" };
+            delete formData.removeImage;
+            const payload = {
+                ...item,
+                ...formData,
+                image: form.elements.removeImage?.checked ? "" : selectedImage,
+                price: Number(formData.price),
+                stock: Number(formData.stock),
+                lowStockThreshold: Number(formData.lowStockThreshold),
+                updatedAt: "2026-10-06"
+            };
             if (id) {
                 Object.assign(state.products.find((product) => product.id === id), payload);
             } else {
                 payload.id = generateID("PROD");
                 state.products.push(payload);
             }
-            save(state);
+            try {
+                save(state);
+            } catch (error) {
+                console.error("Could not save product to browser storage.", error);
+                showToast("Could not save product. Try a smaller photo or free browser storage.");
+                return;
+            }
             closeModal();
             drawProducts();
             showToast("Product saved.");
