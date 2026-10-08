@@ -211,42 +211,144 @@
 
     <div class="appointment-toast" id="appointmentToast" role="status" aria-live="polite"></div>
 
+    <div class="appointment-dialog" id="appointmentDialog" aria-hidden="true">
+        <button class="appointment-dialog-backdrop" type="button" aria-label="Close appointment details" data-close-appointment-dialog></button>
+        <section class="appointment-dialog-card" role="dialog" aria-modal="true" aria-labelledby="appointmentDialogTitle">
+            <button class="appointment-dialog-close" type="button" aria-label="Close appointment details" data-close-appointment-dialog>×</button>
+            <p class="eyebrow" id="appointmentDialogEyebrow">APPOINTMENT</p>
+            <h2 id="appointmentDialogTitle">Appointment details</h2>
+            <p class="appointment-dialog-message" id="appointmentDialogMessage"></p>
+            <dl class="appointment-dialog-details" id="appointmentDialogDetails"></dl>
+            <div class="appointment-dialog-actions">
+                <a class="appointment-dialog-call" id="appointmentDialogCall" href="tel:+6041234567">Call clinic · +60 4-123 4567</a>
+                <button class="appointment-dialog-dismiss" type="button" data-close-appointment-dialog>Close</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="../Admin/admin-data.js"></script>
     <script>
         const savedName = sessionStorage.getItem("tcmPatientName");
-
         if (savedName) {
-            const firstName = savedName.charAt(0).toUpperCase() + savedName.slice(1);
-            document.getElementById("patientName").textContent = firstName;
+            document.getElementById("patientName").textContent =
+                savedName.charAt(0).toUpperCase() + savedName.slice(1);
         }
 
         const tabs = document.querySelectorAll(".appointment-tab");
-        const cards = [...document.querySelectorAll(".appointment-card")];
         const search = document.getElementById("appointmentSearch");
         const emptyMessage = document.getElementById("appointmentEmpty");
         const toast = document.getElementById("appointmentToast");
+        const appointmentList = document.getElementById("appointmentList");
+        const appointmentDialog = document.getElementById("appointmentDialog");
+        let cards = [];
         let activeFilter = "upcoming";
         let toastTimer;
 
-        document.querySelectorAll("[data-count]").forEach((count) => {
-            const status = count.dataset.count;
-            count.textContent = cards.filter((card) => card.dataset.status === status).length;
-        });
+        function todayString() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        }
+
+        function dateCategory(appointment) {
+            if (appointment.status === "Cancelled") return "cancelled";
+            if (appointment.status === "Completed" || appointment.date < todayString()) return "past";
+            return "upcoming";
+        }
+
+        function displayDate(dateString) {
+            const [year, month, day] = dateString.split("-").map(Number);
+            const date = new Date(year, month - 1, day);
+            return {
+                day: String(day).padStart(2, "0"),
+                month: date.toLocaleDateString(undefined, { month: "short" }).toUpperCase(),
+                weekday: date.toLocaleDateString(undefined, { weekday: "short" }).toUpperCase()
+            };
+        }
+
+        function displayTime(time) {
+            const [hours, minutes] = String(time).split(":").map(Number);
+            return `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+            })[character]);
+        }
+
+        function patientAppointments(data) {
+            const email = (sessionStorage.getItem("tcmPatientEmail") || "").trim().toLowerCase();
+            if (!email) return [];
+            const patient = (Array.isArray(data.patients) ? data.patients : []).find((item) =>
+                String(item.email || "").trim().toLowerCase() === email
+            );
+            return data.appointments.filter((appointment) =>
+                appointment.patientId === patient?.id ||
+                String(appointment.patientEmail || "").trim().toLowerCase() === email
+            );
+        }
 
         function updateAppointments() {
             const query = search.value.trim().toLowerCase();
             let visibleCount = 0;
-
             cards.forEach((card) => {
-                const matchesFilter =
-                    activeFilter === "all" || card.dataset.status === activeFilter;
-                const matchesSearch = card.textContent.toLowerCase().includes(query);
-                const visible = matchesFilter && matchesSearch;
-
+                const visible =
+                    (activeFilter === "all" || card.dataset.status === activeFilter) &&
+                    card.textContent.toLowerCase().includes(query);
                 card.hidden = !visible;
                 if (visible) visibleCount++;
             });
-
             emptyMessage.classList.toggle("show", visibleCount === 0);
+        }
+
+        function renderAppointments() {
+            try {
+                const data = window.TcmAdminData.load();
+                const appointments = patientAppointments(data).sort((a, b) =>
+                    `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`)
+                );
+                document.querySelectorAll("[data-count]").forEach((count) => {
+                    count.textContent = appointments.filter((item) => dateCategory(item) === count.dataset.count).length;
+                });
+                appointmentList.innerHTML = appointments.map((appointment) => {
+                    const date = displayDate(appointment.date);
+                    const category = dateCategory(appointment);
+                    const status = escapeHtml(appointment.status || "Scheduled");
+                    const startMinutes = Number(appointment.time?.slice(0, 2)) * 60 + Number(appointment.time?.slice(3, 5));
+                    const endMinutes = Number(appointment.endTime?.slice(0, 2)) * 60 + Number(appointment.endTime?.slice(3, 5));
+                    const duration = Number.isFinite(endMinutes - startMinutes) ? endMinutes - startMinutes : 0;
+                    const actions = category === "upcoming"
+                        ? '<button type="button" data-action="details">View details</button><button type="button" data-action="reschedule">Reschedule</button><button type="button" data-action="cancel">Cancel</button>'
+                        : '<button type="button" data-action="details">View details</button><button type="button" data-action="book-again">Book again</button>';
+                    return `<article class="appointment-card" data-status="${category}" data-appointment-id="${escapeHtml(appointment.id)}">
+                        <div class="appointment-card-top">
+                            <div class="date-block"><strong>${date.day}</strong><span>${date.month}</span><small>${date.weekday}</small></div>
+                            <div class="appointment-summary">
+                                <div class="appointment-title-row"><h3>${escapeHtml(appointment.service)}</h3><span class="status-badge ${category === "past" ? "past" : category === "cancelled" ? "cancelled" : ""}">${status}</span></div>
+                                <div class="appointment-meta">
+                                    <span>◷ ${displayTime(appointment.time)}${appointment.endTime ? ` – ${displayTime(appointment.endTime)}` : ""}</span>
+                                    <span>${escapeHtml(appointment.doctor)}</span>
+                                    ${duration > 0 ? `<span>${duration} minutes</span>` : ""}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="appointment-card-bottom">
+                            <span class="appointment-location">⌖ TCM Smartcare+ Clinic, Penang</span>
+                            <div class="appointment-actions">${actions}</div>
+                        </div>
+                    </article>`;
+                }).join("");
+                cards = [...appointmentList.querySelectorAll(".appointment-card")];
+                emptyMessage.textContent = sessionStorage.getItem("tcmPatientEmail")
+                    ? "No appointments match this view. Try another filter or search term."
+                    : "Sign in to your patient account to view your appointments.";
+                updateAppointments();
+            } catch (error) {
+                console.error("Could not load patient appointments.", error);
+                appointmentList.innerHTML = "";
+                emptyMessage.textContent = "Your appointments could not be loaded. Please refresh the page.";
+                emptyMessage.classList.add("show");
+            }
         }
 
         tabs.forEach((tab) => {
@@ -255,7 +357,6 @@
                     item.classList.remove("active");
                     item.setAttribute("aria-pressed", "false");
                 });
-
                 tab.classList.add("active");
                 tab.setAttribute("aria-pressed", "true");
                 activeFilter = tab.dataset.filter;
@@ -272,32 +373,75 @@
             toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
         }
 
-        document.getElementById("appointmentList").addEventListener("click", (event) => {
+        function showAppointmentDialog(appointment, action) {
+            const isReschedule = action === "reschedule";
+            const date = displayDate(appointment.date);
+            document.getElementById("appointmentDialogEyebrow").textContent =
+                isReschedule ? "RESCHEDULE APPOINTMENT" : "APPOINTMENT DETAILS";
+            document.getElementById("appointmentDialogTitle").textContent =
+                isReschedule ? "Need to change this visit?" : "Your appointment";
+            document.getElementById("appointmentDialogMessage").textContent = isReschedule
+                ? "Please call the clinic and our team will help you find another available time."
+                : "Review your appointment information below.";
+            document.getElementById("appointmentDialogDetails").innerHTML = [
+                ["Service", appointment.service],
+                ["Date", `${date.weekday}, ${date.month} ${date.day}, ${appointment.date.slice(0, 4)}`],
+                ["Time", `${displayTime(appointment.time)}${appointment.endTime ? ` – ${displayTime(appointment.endTime)}` : ""}`],
+                ["Practitioner", appointment.doctor],
+                ["Status", appointment.status || "Scheduled"],
+                ["Appointment ID", appointment.id]
+            ].map(([label, value]) =>
+                `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`
+            ).join("");
+            document.getElementById("appointmentDialogCall").hidden = !isReschedule;
+            appointmentDialog.classList.add("show");
+            appointmentDialog.setAttribute("aria-hidden", "false");
+            appointmentDialog.querySelector(".appointment-dialog-close").focus();
+        }
+
+        function closeAppointmentDialog() {
+            appointmentDialog.classList.remove("show");
+            appointmentDialog.setAttribute("aria-hidden", "true");
+        }
+
+        document.querySelectorAll("[data-close-appointment-dialog]").forEach((button) => {
+            button.addEventListener("click", closeAppointmentDialog);
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && appointmentDialog.classList.contains("show")) {
+                closeAppointmentDialog();
+            }
+        });
+
+        appointmentList.addEventListener("click", (event) => {
             const button = event.target.closest("button[data-action]");
             if (!button) return;
-
             const card = button.closest(".appointment-card");
+            const appointmentId = card.dataset.appointmentId;
+            const appointment = window.TcmAdminData.load().appointments.find((item) => item.id === appointmentId);
+            if (!appointment) {
+                showToast("Appointment could not be found. Please refresh.");
+                return;
+            }
             const action = button.dataset.action;
-            const title = card.querySelector("h3").textContent;
-            const practitioner = card.querySelector(".appointment-meta span:nth-child(2)").textContent;
 
             if (action === "details") {
-                const date = card.querySelector(".date-block");
-                const time = card.querySelector(".appointment-meta span:first-child").textContent;
-                showToast(`${title} with ${practitioner} · ${date.innerText.replaceAll("\\n", " ")} · ${time}`);
+                showAppointmentDialog(appointment, action);
             } else if (action === "reschedule") {
-                showToast(`To reschedule ${title}, please call support at +60 4-123 4567.`);
-            } else if (action === "cancel") {
-                if (window.confirm(`Cancel your ${title} appointment with ${practitioner}?`)) {
-                    card.dataset.status = "cancelled";
-                    const badge = card.querySelector(".status-badge");
-                    badge.textContent = "Cancelled";
-                    badge.className = "status-badge cancelled";
-                    card.querySelectorAll("button[data-action]").forEach((item) => item.remove());
-                    card.querySelector(".appointment-actions").innerHTML =
-                        '<button type="button" data-action="details">View details</button><button type="button" data-action="book-again">Book again</button>';
+                showAppointmentDialog(appointment, action);
+            } else if (action === "cancel" && window.confirm(`Cancel your ${appointment.service} appointment with ${appointment.doctor}?`)) {
+                try {
+                    const data = window.TcmAdminData.load();
+                    const storedAppointment = data.appointments.find((item) => item.id === appointmentId);
+                    if (!storedAppointment) throw new Error("Appointment no longer exists.");
+                    storedAppointment.status = "Cancelled";
+                    window.TcmAdminData.save(data);
                     showToast("Appointment cancelled.");
-                    updateAppointments();
+                    renderAppointments();
+                } catch (error) {
+                    console.error("Could not cancel patient appointment.", error);
+                    showToast("Appointment could not be cancelled. Please refresh and try again.");
                 }
             } else if (action === "book-again") {
                 window.location.href = "main.html#book";
@@ -306,6 +450,7 @@
 
         document.getElementById("logoutButton").addEventListener("click", () => {
             sessionStorage.removeItem("tcmPatientName");
+            sessionStorage.removeItem("tcmPatientEmail");
             window.location.href = "login.html";
         });
 
@@ -313,7 +458,11 @@
             document.querySelector(".sidebar").classList.toggle("open");
         });
 
-        updateAppointments();
+        window.addEventListener("storage", (event) => {
+            if (event.key === "tcmAdminData") renderAppointments();
+        });
+
+        renderAppointments();
     </script>
     <script src="profile-avatar.js"></script>
 </body>

@@ -330,6 +330,10 @@ nav a:hover {
     margin-bottom: 16px;
 }
 
+.login-box #loginStatus:empty {
+    display: none;
+}
+
 
 /* =========================================
    FORM
@@ -780,15 +784,17 @@ nav a:hover {
         top: auto;
         bottom: 0;
 
-        height: 315px;
+        height: auto;
 
-        min-height: 315px;
+        min-height: 0;
+
+        max-height: calc(100vh - 24px);
 
         border-radius: 25px 25px 0 0;
 
-        padding: 20px 25px;
+        padding: 20px 25px 40px;
 
-        display: block;
+        overflow-y: auto;
     }
 
     .login-box h2 {
@@ -853,7 +859,7 @@ nav a:hover {
     }
 
     .login-box {
-        padding: 23px 20px 18px;
+        padding: 23px 20px 38px;
     }
 
     .login-box h2 {

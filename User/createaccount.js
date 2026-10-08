@@ -177,6 +177,7 @@ createAccountForm.addEventListener("submit", async (event) => {
         await TcmAuth.setPassword(email, password);
         localStorage.setItem("tcmPatientProfile", JSON.stringify(profile));
         sessionStorage.setItem("tcmPatientName", fullName);
+        sessionStorage.setItem("tcmPatientEmail", email.trim().toLowerCase());
 
         document.getElementById("formStatus").textContent =
             "Account created. Opening your patient dashboard...";

@@ -198,6 +198,7 @@ document.getElementById("passwordForm").addEventListener("submit", (event) => {
 
 document.getElementById("logoutButton").addEventListener("click", () => {
     sessionStorage.removeItem("tcmPatientName");
+    sessionStorage.removeItem("tcmPatientEmail");
     window.location.href = "login.html";
 });
 

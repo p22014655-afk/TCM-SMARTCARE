@@ -797,19 +797,36 @@ button {
 }
 
 .time-slots {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 9px;
     padding: 14px 18px;
-    align-items: center;
     border-top: 1px solid #e6eeee;
     background: #fbfdfd;
 }
 
-.time-slots strong {
-    margin-right: 5px;
+.slot-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
+    gap: 12px;
+}
+
+.slot-group {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid #e1eceb;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.slot-group .availability-date {
+    display: block;
+    margin-bottom: 8px;
     color: #607779;
     font-size: 12px;
+}
+
+.slot-times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
 }
 
 .time-button,
@@ -837,13 +854,24 @@ button {
 .no-results {
     display: none;
     margin: 20px 0 0;
+    padding: 14px 18px;
+    border: 1px solid #dbe8e7;
+    border-radius: 10px;
+    background: #f7faf9;
     color: #71878a;
     font-size: 13px;
+    line-height: 1.55;
     text-align: center;
 }
 
 .no-results.show {
     display: block;
+}
+
+.no-results.appointment-booked {
+    border-color: #e8c990;
+    background: #fff8e9;
+    color: #74551f;
 }
 
 .booking-success {
@@ -879,6 +907,200 @@ button {
 .booking-success p {
     margin: 3px 0 0;
     font-size: 12px;
+}
+
+.booking-confirmation {
+    position: fixed;
+    z-index: 1200;
+    inset: 0;
+    display: none;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-confirmation.show {
+    display: flex;
+}
+
+.booking-confirmation-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    background: rgba(15, 39, 40, 0.55);
+}
+
+.booking-confirmation-card {
+    position: relative;
+    width: min(100%, 480px);
+    padding: 28px;
+    border: 1px solid #dce9e8;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(15, 39, 40, 0.22);
+}
+
+.booking-confirmation-card h2 {
+    margin: 5px 0 14px;
+    color: #183f42;
+    font-size: 22px;
+}
+
+.booking-confirmation-details {
+    margin: 0;
+    padding: 14px;
+    border-radius: 10px;
+    background: #edf7f5;
+    color: #15595b;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.booking-confirmation-note {
+    margin: 12px 0 0;
+    color: #607779;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.booking-confirmation-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: #f1f6f5;
+    color: #466568;
+    font-size: 23px;
+}
+
+.booking-confirmation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+    justify-content: flex-end;
+}
+
+.booking-confirmation-actions button {
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 1px solid #b9d5d4;
+    border-radius: 8px;
+    background: #fff;
+    color: #15595b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.booking-confirmation-actions #confirmBooking {
+    border-color: #15595b;
+    background: #15595b;
+    color: #fff;
+}
+
+.appointment-notice {
+    position: fixed;
+    z-index: 1210;
+    inset: 0;
+    display: none;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.appointment-notice.show {
+    display: flex;
+}
+
+.appointment-notice-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    background: rgba(15, 39, 40, 0.55);
+}
+
+.appointment-notice-card {
+    position: relative;
+    width: min(100%, 440px);
+    padding: 28px;
+    border: 1px solid #ead9b8;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(15, 39, 40, 0.22);
+    text-align: center;
+}
+
+.appointment-notice-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 13px;
+    border-radius: 50%;
+    place-items: center;
+    background: #fff1d2;
+    color: #855f1d;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.appointment-notice-card h2 {
+    margin: 0;
+    color: #183f42;
+    font-size: 20px;
+}
+
+.appointment-notice-card > p {
+    margin: 12px 0 0;
+    color: #607779;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.appointment-notice-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: #f1f6f5;
+    color: #466568;
+    font-size: 23px;
+}
+
+.appointment-notice-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+    align-items: center;
+    justify-content: center;
+}
+
+.appointment-notice-actions button,
+.appointment-notice-link {
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 1px solid #b9d5d4;
+    border-radius: 8px;
+    background: #fff;
+    color: #15595b;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.appointment-notice-actions .appointment-notice-link {
+    border-color: #15595b;
+    background: #15595b;
+    color: #fff;
 }
 
 /* Toast */
@@ -1004,8 +1226,12 @@ button {
         align-items: flex-start;
     }
 
-    .time-slots {
-        align-items: flex-start;
+    .booking-confirmation-actions {
+        flex-direction: column-reverse;
+    }
+
+    .booking-confirmation-actions button {
+        width: 100%;
     }
 }
 
@@ -1093,5 +1319,3 @@ button {
   font-weight: 700;
   text-decoration: none;
 }
-
-

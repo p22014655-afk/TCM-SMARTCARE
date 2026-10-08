@@ -1,4 +1,30 @@
 const storageKey = "tcmMessages";
+const profile = (() => {
+    try {
+        return JSON.parse(localStorage.getItem("tcmPatientProfile") || "{}");
+    } catch {
+        return {};
+    }
+})();
+const activeEmail = (
+    sessionStorage.getItem("tcmPatientEmail") ||
+    (() => {
+        try {
+            return JSON.parse(
+                localStorage.getItem("tcmPatientAccount") || "{}"
+            ).email;
+        } catch {
+            return "";
+        }
+    })() ||
+    profile.email ||
+    "guest"
+).trim().toLowerCase();
+const activePatientName =
+    sessionStorage.getItem("tcmPatientName") ||
+    profile.fullName ||
+    activeEmail.split("@")[0] ||
+    "Patient";
 
 const conversations = [
     {
@@ -6,38 +32,16 @@ const conversations = [
         name: "Dr. Lim Wei Ming",
         role: "TCM Practitioner · Usually replies within one day",
         initials: "LW",
-        unread: 1,
-        messages: [
-            {
-                from: "them",
-                text: "Hello Jamie, I reviewed your recent wellness check-in. How have you been feeling since your last visit?",
-                time: "9:20 AM"
-            },
-            {
-                from: "me",
-                text: "I have been sleeping a little better, but my shoulder is still tight.",
-                time: "9:34 AM"
-            },
-            {
-                from: "them",
-                text: "Thanks for letting me know. Please make a note of when the tightness is strongest, and we can discuss it at your appointment.",
-                time: "9:42 AM"
-            }
-        ]
+        unread: 0,
+        messages: []
     },
     {
         id: "care-team",
         name: "Care Team",
         role: "Patient support · Usually replies within one day",
         initials: "TC",
-        unread: 1,
-        messages: [
-            {
-                from: "them",
-                text: "Welcome to TCM Smartcare+. You can message us here if you need help with your appointments.",
-                time: "Yesterday"
-            }
-        ]
+        unread: 0,
+        messages: []
     },
     {
         id: "dr-tan",
@@ -45,13 +49,7 @@ const conversations = [
         role: "TCM Practitioner · Usually replies within one day",
         initials: "TM",
         unread: 0,
-        messages: [
-            {
-                from: "them",
-                text: "Your herbal plan is ready to review. Please contact the care team if you have any questions.",
-                time: "Monday"
-            }
-        ]
+        messages: []
     },
     {
         id: "dr-wong",
@@ -59,13 +57,7 @@ const conversations = [
         role: "TCM Practitioner · Usually replies within one day",
         initials: "WJ",
         unread: 0,
-        messages: [
-            {
-                from: "them",
-                text: "Hello, how can I help with your acupuncture or cupping therapy questions?",
-                time: "Today"
-            }
-        ]
+        messages: []
     }
 ];
 
@@ -78,22 +70,31 @@ let activeConversationId = conversations.some(
     : conversations[0].id;
 
 try {
-    const savedConversations = JSON.parse(
-        localStorage.getItem(storageKey) || "[]"
-    );
+    const savedData = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    let accountMessages = savedData && !Array.isArray(savedData)
+        ? savedData[activeEmail] || []
+        : [];
 
-    savedConversations.forEach((savedConversation) => {
+    if (Array.isArray(savedData)) {
+        localStorage.setItem("tcmMessagesLegacy", JSON.stringify(savedData));
+        localStorage.setItem(storageKey, JSON.stringify({}));
+        accountMessages = [];
+    }
+
+    accountMessages.forEach((savedConversation) => {
         const conversation = conversations.find(
             (item) => item.id === savedConversation.id
         );
 
         if (conversation && Array.isArray(savedConversation.messages)) {
             conversation.messages = savedConversation.messages;
-            conversation.unread = savedConversation.unread || 0;
+            conversation.unread =
+                Number(savedConversation.userUnread ?? savedConversation.unread) || 0;
+            conversation.staffUnread = Number(savedConversation.staffUnread) || 0;
         }
     });
 } catch {
-    // Use the sample conversations if saved data is unavailable.
+    alert("Could not load your messages from this browser.");
 }
 
 const conversationList = document.getElementById("conversationList");
@@ -106,9 +107,49 @@ const conversationSearch = document.getElementById("conversationSearch");
 
 function saveConversations() {
     try {
-        localStorage.setItem(storageKey, JSON.stringify(conversations));
+        const savedData = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        const accountMessages = Array.isArray(savedData)
+            ? {}
+            : savedData;
+
+        accountMessages[activeEmail] = conversations.map((conversation) => ({
+            ...conversation,
+            patientEmail: activeEmail,
+            patientName: activePatientName,
+            userUnread: conversation.unread || 0,
+            staffUnread: conversation.staffUnread || 0
+        }));
+
+        localStorage.setItem(storageKey, JSON.stringify(accountMessages));
     } catch {
         alert("Could not save this message in your browser.");
+    }
+}
+
+function refreshAccountMessages() {
+    try {
+        const savedData = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        const accountMessages = savedData && !Array.isArray(savedData)
+            ? savedData[activeEmail] || []
+            : [];
+
+        accountMessages.forEach((savedConversation) => {
+            const conversation = conversations.find(
+                (item) => item.id === savedConversation.id
+            );
+
+            if (conversation && Array.isArray(savedConversation.messages)) {
+                conversation.messages = savedConversation.messages;
+                conversation.unread =
+                    Number(savedConversation.userUnread ?? savedConversation.unread) || 0;
+                conversation.staffUnread = Number(savedConversation.staffUnread) || 0;
+            }
+        });
+
+        renderConversationList(conversationSearch.value);
+        renderMessages();
+    } catch {
+        alert("Could not refresh your messages from this browser.");
     }
 }
 
@@ -246,6 +287,7 @@ document.getElementById("messageForm").addEventListener("submit", (event) => {
         text,
         time
     });
+    conversation.staffUnread = (conversation.staffUnread || 0) + 1;
 
     messageInput.value = "";
     renderMessages();
@@ -259,29 +301,26 @@ document.getElementById("menuButton").addEventListener("click", () => {
 
 document.getElementById("logoutButton").addEventListener("click", () => {
     sessionStorage.removeItem("tcmPatientName");
+    sessionStorage.removeItem("tcmPatientEmail");
     window.location.href = "login.html";
 });
 
-try {
-    const profile = JSON.parse(
-        localStorage.getItem("tcmPatientProfile") || "{}"
-    );
+window.addEventListener("storage", (event) => {
+    if (event.key === storageKey) refreshAccountMessages();
+});
 
-    if (profile.fullName) {
-        document.getElementById("headerName").textContent = profile.fullName;
-    }
+if (profile.fullName) {
+    document.getElementById("headerName").textContent = profile.fullName;
+}
 
-    if (profile.photo) {
-        const avatar = document.getElementById("headerAvatar");
-        avatar.textContent = "";
-        avatar.classList.add("profile-image");
-        avatar.style.backgroundImage = `url("${profile.photo}")`;
-        avatar.style.backgroundSize = "cover";
-        avatar.style.backgroundPosition = "center";
-        avatar.style.backgroundRepeat = "no-repeat";
-    }
-} catch {
-    // Keep the default header avatar when profile data is unavailable.
+if (profile.photo) {
+    const avatar = document.getElementById("headerAvatar");
+    avatar.textContent = "";
+    avatar.classList.add("profile-image");
+    avatar.style.backgroundImage = `url("${profile.photo}")`;
+    avatar.style.backgroundSize = "cover";
+    avatar.style.backgroundPosition = "center";
+    avatar.style.backgroundRepeat = "no-repeat";
 }
 
 openConversation(activeConversationId);

@@ -105,7 +105,7 @@
                 doctorId: "dr-lim",
                 doctor: "Dr. Lim Wei Ming",
                 room: "Room 02",
-                status: "Waiting"
+                status: "Checked In"
             },
             {
                 id: "APT-002",
@@ -119,7 +119,7 @@
                 doctorId: "dr-tan",
                 doctor: "Dr. Tan Mei Ling",
                 room: "Room 01",
-                status: "Confirmed"
+                status: "Scheduled"
             },
             {
                 id: "APT-003",
@@ -133,7 +133,7 @@
                 doctorId: "dr-wong",
                 doctor: "Dr. Wong Jun Hao",
                 room: "Room 03",
-                status: "Pending Confirmation"
+                status: "Scheduled"
             },
             {
                 id: "APT-004",
@@ -349,17 +349,205 @@
         ]
     };
 
+    function mergePatientMessages(data) {
+        let patientMessages;
+
+        try {
+            patientMessages = JSON.parse(
+                localStorage.getItem("tcmMessages") || "{}"
+            );
+        } catch (error) {
+            console.error("Could not read patient messages.", error);
+            return;
+        }
+
+        if (!patientMessages || Array.isArray(patientMessages)) return;
+        if (!Array.isArray(data.messages)) data.messages = [];
+
+        Object.entries(patientMessages).forEach(([email, conversations]) => {
+            if (!Array.isArray(conversations)) return;
+
+            conversations.forEach((conversation) => {
+                if (
+                    !conversation ||
+                    !conversation.id ||
+                    !Array.isArray(conversation.messages) ||
+                    conversation.messages.length === 0
+                ) {
+                    return;
+                }
+
+                const id = `PATIENT-${encodeURIComponent(email)}-${encodeURIComponent(conversation.id)}`;
+                const thread = {
+                    id,
+                    patient: conversation.patientName || email,
+                    patientEmail: email,
+                    patientConversationId: conversation.id,
+                    doctorId: conversation.id.startsWith("dr-")
+                        ? conversation.id
+                        : "",
+                    category: conversation.id === "care-team" ? "General" : "Consultation",
+                    unread: Number(conversation.staffUnread) || 0,
+                    lastTime: conversation.messages.at(-1)?.time || "",
+                    messages: conversation.messages.map((message) => ({
+                        from: message.from === "me" ? "patient" : "staff",
+                        text: String(message.text || ""),
+                        time: String(message.time || "")
+                    }))
+                };
+
+                const existingIndex = data.messages.findIndex(
+                    (item) => item.id === id
+                );
+
+                if (existingIndex === -1) {
+                    data.messages.push(thread);
+                } else {
+                    data.messages[existingIndex] = {
+                        ...data.messages[existingIndex],
+                        ...thread
+                    };
+                }
+            });
+        });
+    }
+
+    function syncPatientMessages(data) {
+        const patientMessages = JSON.parse(
+            localStorage.getItem("tcmMessages") || "{}"
+        );
+
+        if (!patientMessages || Array.isArray(patientMessages)) return;
+
+        data.messages.forEach((thread) => {
+            if (!thread.patientEmail || !thread.patientConversationId) return;
+
+            const conversations = patientMessages[thread.patientEmail];
+            const conversation = Array.isArray(conversations)
+                ? conversations.find(
+                    (item) => item.id === thread.patientConversationId
+                )
+                : null;
+            if (!conversation) return;
+
+            const oldMessages = Array.isArray(conversation.messages)
+                ? conversation.messages
+                : [];
+            const newReplies = thread.messages
+                .slice(oldMessages.length)
+                .filter((message) => message.from !== "patient").length;
+
+            conversation.messages = thread.messages.map((message) => ({
+                from: message.from === "patient" ? "me" : "them",
+                text: String(message.text || ""),
+                time: String(message.time || "")
+            }));
+            conversation.staffUnread = Number(thread.unread) || 0;
+            conversation.userUnread =
+                (Number(conversation.userUnread) || 0) + newReplies;
+            conversation.unread = conversation.userUnread;
+        });
+
+        localStorage.setItem("tcmMessages", JSON.stringify(patientMessages));
+    }
+
     function load() {
+        let data;
+
         try {
             const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
-            return saved || structuredClone(seedData);
+            data = saved || structuredClone(seedData);
         } catch {
-            return structuredClone(seedData);
+            data = structuredClone(seedData);
         }
+
+        try {
+            const purchaseHistory = JSON.parse(
+                localStorage.getItem("tcmPurchaseHistory") || "[]"
+            );
+
+            if (!Array.isArray(purchaseHistory)) {
+                throw new Error("Purchase history data is invalid.");
+            }
+
+            if (!Array.isArray(data.orders)) data.orders = [];
+
+            const existingOrderIds = new Set(
+                data.orders.map((order) => String(order.id))
+            );
+            let importedOrders = false;
+
+            purchaseHistory.forEach((order) => {
+                if (
+                    !order ||
+                    !order.orderNumber ||
+                    !Array.isArray(order.items) ||
+                    existingOrderIds.has(String(order.orderNumber))
+                ) {
+                    return;
+                }
+
+                const method = String(order.paymentMethod || "").toLowerCase();
+                const paymentMethod = method.includes("fpx")
+                    ? "FPX"
+                    : method.includes("card")
+                        ? "Card"
+                        : method.includes("ewallet") || method.includes("e-wallet")
+                            ? "eWallet"
+                            : order.paymentMethod || "Other";
+
+                data.orders.push({
+                    id: String(order.orderNumber),
+                    customer: order.buyer?.name || "Patient",
+                    phone: order.buyer?.phone || "",
+                    date: String(order.purchasedAt || "").slice(0, 10),
+                    items: order.items.map((item) => ({
+                        ...item,
+                        name: String(item?.name || "Product"),
+                        quantity: Number(item?.quantity) || 0,
+                        price: Number(item?.price) || 0
+                    })),
+                    total: Number(order.total) || 0,
+                    paymentMethod,
+                    status: "Pending Packing",
+                    courier: "",
+                    tracking: ""
+                });
+
+                existingOrderIds.add(String(order.orderNumber));
+                importedOrders = true;
+            });
+
+            if (importedOrders) {
+                localStorage.setItem(storageKey, JSON.stringify(data));
+            }
+        } catch (error) {
+            console.error("Could not import customer purchase history.", error);
+        }
+
+        let migratedAppointmentStatuses = false;
+        if (Array.isArray(data.appointments)) {
+            data.appointments.forEach((appointment) => {
+                if (["Pending Confirmation", "Confirmed"].includes(appointment.status)) {
+                    appointment.status = "Scheduled";
+                    migratedAppointmentStatuses = true;
+                } else if (appointment.status === "Waiting") {
+                    appointment.status = "Checked In";
+                    migratedAppointmentStatuses = true;
+                }
+            });
+        }
+        if (migratedAppointmentStatuses) {
+            localStorage.setItem(storageKey, JSON.stringify(data));
+        }
+
+        mergePatientMessages(data);
+        return data;
     }
 
     function save(data) {
         localStorage.setItem(storageKey, JSON.stringify(data));
+        syncPatientMessages(data);
     }
 
     function reset() {

@@ -407,6 +407,7 @@
 
             const profile = JSON.parse(localStorage.getItem("tcmPatientProfile") || "{}");
             sessionStorage.setItem("tcmPatientName", profile.fullName || email.split("@")[0]);
+            sessionStorage.setItem("tcmPatientEmail", email);
             window.location.href = "main.html";
         } catch {
             status.textContent = "Could not check your account. Please try again.";

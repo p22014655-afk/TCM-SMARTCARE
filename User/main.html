@@ -197,7 +197,7 @@
                     <article class="practitioner-card"
                         data-services="consultation,acupuncture"
                         data-name="dr lim wei ming"
-                        data-days="today,tomorrow,week">
+                        data-doctor-id="dr-lim">
                         <div class="practitioner-main">
                             <div class="practitioner-photo photo-lim">LW</div>
                             <div class="practitioner-details">
@@ -210,18 +210,14 @@
                         </div>
 
                         <div class="time-slots">
-                            <strong>Today</strong>
-                            <button class="time-button">10:30 AM</button>
-                            <button class="time-button">11:15 AM</button>
-                            <button class="time-button">2:00 PM</button>
-                            <button class="more-times">+ More</button>
+                            <strong>Loading availability…</strong>
                         </div>
                     </article>
 
                     <article class="practitioner-card"
                         data-services="herbal,consultation"
                         data-name="dr tan mei ling"
-                        data-days="tomorrow,week">
+                        data-doctor-id="dr-tan">
                         <div class="practitioner-main">
                             <div class="practitioner-photo photo-tan">TM</div>
                             <div class="practitioner-details">
@@ -234,18 +230,14 @@
                         </div>
 
                         <div class="time-slots">
-                            <strong>Tomorrow</strong>
-                            <button class="time-button">9:30 AM</button>
-                            <button class="time-button">1:00 PM</button>
-                            <button class="time-button">3:30 PM</button>
-                            <button class="more-times">+ More</button>
+                            <strong>Loading availability…</strong>
                         </div>
                     </article>
 
                     <article class="practitioner-card"
                         data-services="acupuncture,cupping"
                         data-name="dr wong jun hao"
-                        data-days="today,tomorrow,week">
+                        data-doctor-id="dr-wong">
                         <div class="practitioner-main">
                             <div class="practitioner-photo photo-wong">WJ</div>
                             <div class="practitioner-details">
@@ -258,23 +250,19 @@
                         </div>
 
                         <div class="time-slots">
-                            <strong>Today</strong>
-                            <button class="time-button">12:00 PM</button>
-                            <button class="time-button">2:30 PM</button>
-                            <button class="time-button">4:15 PM</button>
-                            <button class="more-times">+ More</button>
+                            <strong>Loading availability…</strong>
                         </div>
                     </article>
                 </div>
 
-                <p class="no-results" id="noResults">
+                <p class="no-results" id="noResults" role="status" aria-live="polite">
                     No practitioners are available for this filter.
                 </p>
 
                 <div class="booking-success" id="bookingSuccess">
                     <span>✓</span>
                     <div>
-                        <strong>Appointment time selected</strong>
+                        <strong>Appointment request sent</strong>
                         <p id="bookingMessage"></p>
                     </div>
                 </div>
@@ -284,6 +272,35 @@
 
     <div class="toast" id="toast">
         Your check-in has been saved. Thank you!
+    </div>
+
+    <div class="booking-confirmation" id="bookingConfirmation" aria-hidden="true">
+        <button class="booking-confirmation-backdrop" type="button" aria-label="Close confirmation" data-close-booking-confirmation></button>
+        <section class="booking-confirmation-card" role="dialog" aria-modal="true" aria-labelledby="bookingConfirmationTitle">
+            <button class="booking-confirmation-close" type="button" aria-label="Close confirmation" data-close-booking-confirmation>×</button>
+            <p class="eyebrow">PLEASE REVIEW YOUR SELECTION</p>
+            <h2 id="bookingConfirmationTitle">Confirm appointment</h2>
+            <p class="booking-confirmation-details" id="confirmationDetails"></p>
+            <p class="booking-confirmation-note">Your request will be sent to the clinic as pending confirmation.</p>
+            <div class="booking-confirmation-actions">
+                <button class="secondary-btn" type="button" data-close-booking-confirmation>Choose another time</button>
+                <button class="primary-btn" type="button" id="confirmBooking">Confirm appointment</button>
+            </div>
+        </section>
+    </div>
+
+    <div class="appointment-notice" id="appointmentNotice" aria-hidden="true">
+        <button class="appointment-notice-backdrop" type="button" aria-label="Close notice" data-close-appointment-notice></button>
+        <section class="appointment-notice-card" role="alertdialog" aria-modal="true" aria-labelledby="appointmentNoticeTitle" aria-describedby="appointmentNoticeMessage">
+            <button class="appointment-notice-close" type="button" aria-label="Close notice" data-close-appointment-notice>×</button>
+            <span class="appointment-notice-icon" aria-hidden="true">i</span>
+            <h2 id="appointmentNoticeTitle">You already have an appointment</h2>
+            <p id="appointmentNoticeMessage"></p>
+            <div class="appointment-notice-actions">
+                <button class="appointment-notice-dismiss" type="button" data-close-appointment-notice>Choose another date</button>
+                <a class="appointment-notice-link" href="appointments.html">View my appointments</a>
+            </div>
+        </section>
     </div>
 
     <div class="doctor-modal" id="doctorModal" aria-hidden="true">
@@ -322,6 +339,7 @@
         </section>
     </div>
 
+    <script src="../Admin/admin-data.js"></script>
     <script src="main.js"></script>
     <script src="doctor-details.js"></script>
     <script src="profile-avatar.js"></script>

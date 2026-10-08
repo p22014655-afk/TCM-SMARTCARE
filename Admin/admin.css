@@ -1253,6 +1253,57 @@ body {
     min-width: 0;
 }
 
+.table-toolbar label[hidden] {
+    display: none;
+}
+
+.appointment-panel #appointmentContent {
+    overflow-x: auto;
+}
+
+.appointment-panel .admin-table {
+    min-width: 940px;
+    table-layout: fixed;
+}
+
+.appointment-panel .admin-table th:nth-child(1),
+.appointment-panel .admin-table td:nth-child(1) {
+    width: 20%;
+}
+
+.appointment-panel .admin-table th:nth-child(2),
+.appointment-panel .admin-table td:nth-child(2) {
+    width: 14%;
+}
+
+.appointment-panel .admin-table th:nth-child(3),
+.appointment-panel .admin-table td:nth-child(3) {
+    width: 17%;
+}
+
+.appointment-panel .admin-table th:nth-child(4),
+.appointment-panel .admin-table td:nth-child(4) {
+    width: 17%;
+}
+
+.appointment-panel .admin-table th:nth-child(5),
+.appointment-panel .admin-table td:nth-child(5) {
+    width: 14%;
+}
+
+.appointment-panel .admin-table th:nth-child(6),
+.appointment-panel .admin-table td:nth-child(6) {
+    width: 18%;
+}
+
+.appointment-panel .admin-table td {
+    overflow-wrap: break-word;
+}
+
+.appointment-panel .admin-table td:nth-child(3) strong {
+    white-space: nowrap;
+}
+
 .table-toolbar input,
 .table-toolbar select {
     min-height: 40px;
@@ -1574,6 +1625,48 @@ body {
 
 .patient-directory .table-toolbar {
     grid-template-columns: minmax(240px, 1.6fr) 1fr 1fr;
+}
+
+.care-command-heading {
+    padding-top: 12px;
+    border-top: 1px solid var(--admin-line);
+}
+
+.care-command-heading h3 {
+    margin: 0 0 5px;
+    color: var(--admin-green-dark);
+    font-size: 16px;
+}
+
+.care-command-heading p,
+.staff-care-command .selected-head p {
+    margin: 0;
+    color: var(--admin-muted);
+    font-size: 12px;
+}
+
+.staff-care-command {
+    border-top: 3px solid var(--admin-green);
+}
+
+.staff-care-command .selected-head {
+    margin-bottom: 18px;
+}
+
+.care-command-details > div {
+    min-height: 76px;
+    padding: 14px;
+    border: 1px solid var(--admin-line);
+    border-radius: 8px;
+    background: #fbfdfb;
+}
+
+.care-command-details .care-command-follow-up {
+    grid-column: 1 / -1;
+}
+
+.care-command-details dd {
+    white-space: pre-line;
 }
 
 .care-selector .table-toolbar {
@@ -1921,5 +2014,327 @@ body {
     .admin-table {
         display: block;
         overflow-x: auto;
+    }
+}
+
+.admin-message-page {
+    padding: 18px;
+}
+
+.admin-messenger {
+    display: grid;
+    min-height: 620px;
+    grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.admin-conversation-panel {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    border-right: 1px solid var(--admin-line);
+}
+
+.admin-conversation-heading {
+    padding: 20px;
+    border-bottom: 1px solid var(--admin-line);
+}
+
+.admin-conversation-heading h3 {
+    margin: 0 0 14px;
+    font-size: 18px;
+}
+
+.admin-conversation-heading input {
+    width: 100%;
+    min-height: 40px;
+    padding: 9px 12px;
+    border: 1px solid var(--admin-line);
+    border-radius: 9px;
+    outline-color: var(--admin-green);
+    background: #ffffff;
+    color: var(--admin-ink);
+    font-size: 13px;
+}
+
+.admin-conversation-list {
+    display: grid;
+    align-content: start;
+    overflow-y: auto;
+}
+
+.admin-conversation-item {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    gap: 11px;
+    padding: 14px 15px;
+    align-items: center;
+    border: 0;
+    border-bottom: 1px solid #edf2ef;
+    background: #ffffff;
+    color: var(--admin-ink);
+    cursor: pointer;
+    text-align: left;
+}
+
+.admin-conversation-item:hover,
+.admin-conversation-item.active {
+    background: #edf6f4;
+}
+
+.admin-conversation-avatar {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 50%;
+    place-items: center;
+    background: #dceeed;
+    color: #15595b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-conversation-summary {
+    min-width: 0;
+    flex: 1;
+}
+
+.admin-conversation-summary strong,
+.admin-conversation-summary > span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-conversation-summary strong {
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.admin-conversation-summary > span,
+.admin-conversation-meta {
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-conversation-meta {
+    display: grid;
+    flex: 0 0 auto;
+    gap: 6px;
+    justify-items: end;
+}
+
+.admin-unread-count {
+    display: grid;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 20px;
+    place-items: center;
+    background: var(--admin-green);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.admin-message-empty-list {
+    padding: 22px 16px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+.admin-chat-panel {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.admin-chat-heading {
+    display: flex;
+    min-height: 72px;
+    gap: 12px;
+    padding: 14px 18px;
+    align-items: center;
+    border-bottom: 1px solid var(--admin-line);
+}
+
+.admin-chat-heading h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+}
+
+.admin-chat-heading p {
+    margin: 0;
+    color: var(--admin-muted);
+    font-size: 11px;
+}
+
+.admin-chat-messages {
+    display: flex;
+    min-height: 400px;
+    padding: 20px;
+    flex: 1;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    background: #fbfdfd;
+}
+
+.admin-message-date {
+    align-self: center;
+    margin: 2px 0 8px;
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-chat-bubble {
+    max-width: min(78%, 500px);
+    padding: 10px 13px;
+    border-radius: 13px;
+    background: #edf3f2;
+    color: #35595b;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.admin-chat-bubble.incoming {
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.admin-chat-bubble.outgoing {
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    background: #195e60;
+    color: #ffffff;
+}
+
+.admin-chat-bubble time {
+    display: block;
+    margin-top: 5px;
+    opacity: 0.72;
+    font-size: 9px;
+    text-align: right;
+}
+
+.admin-message-form {
+    display: grid;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--admin-line);
+    background: #ffffff;
+}
+
+.admin-message-composer {
+    display: flex;
+    gap: 9px;
+    align-items: end;
+}
+
+.admin-message-composer textarea {
+    min-height: 40px;
+    max-height: 120px;
+    padding: 10px 12px;
+    flex: 1;
+    border: 1px solid var(--admin-line);
+    border-radius: 9px;
+    outline-color: var(--admin-green);
+    resize: vertical;
+    background: #ffffff;
+    color: var(--admin-ink);
+    font-size: 12px;
+}
+
+.admin-message-composer .primary-btn {
+    min-height: 40px;
+    padding: 0 17px;
+}
+
+.admin-quick-reply {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-quick-reply select {
+    max-width: 260px;
+    min-height: 30px;
+    padding: 5px 8px;
+    border: 1px solid var(--admin-line);
+    border-radius: 7px;
+    background: #ffffff;
+    color: var(--admin-ink);
+    font-size: 11px;
+}
+
+.admin-chat-empty {
+    display: grid;
+    min-height: 100%;
+    padding: 32px;
+    align-content: center;
+    justify-items: center;
+    color: var(--admin-muted);
+    text-align: center;
+}
+
+.admin-chat-empty-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    place-items: center;
+    background: var(--admin-green-soft);
+    color: var(--admin-green);
+    font-size: 20px;
+}
+
+.admin-chat-empty h3 {
+    margin: 0 0 6px;
+    color: var(--admin-ink);
+    font-size: 15px;
+}
+
+.admin-chat-empty p {
+    margin: 0;
+    font-size: 12px;
+}
+
+@media (max-width: 760px) {
+    .admin-message-page {
+        padding: 12px;
+    }
+
+    .admin-messenger {
+        min-height: 600px;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-conversation-panel {
+        max-height: 235px;
+        border-right: 0;
+        border-bottom: 1px solid var(--admin-line);
+    }
+
+    .admin-conversation-heading {
+        padding: 14px;
+    }
+
+    .admin-conversation-heading h3 {
+        margin-bottom: 10px;
+    }
+
+    .admin-chat-messages {
+        min-height: 320px;
     }
 }

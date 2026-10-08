@@ -13,6 +13,7 @@
         announcements: renderAnnouncements,
         analytics: renderAnalytics
     };
+    let activeMessageId = "";
 
     function data() {
         return window.TcmAdminData.load();
@@ -61,7 +62,7 @@
     }
 
     function badge(status) {
-        return `<span class="badge ${statusClass(status)}">${status}</span>`;
+        return `<span class="badge ${statusClass(status)}">${escapeHtml(status)}</span>`;
     }
 
     function protect(page) {
@@ -157,7 +158,7 @@
                 <main class="admin-main">
                     <header class="admin-header">
                         <div class="admin-title">
-                            <p>${formatDate("2026-10-06")}</p>
+                            <p>${formatDate(new Date())}</p>
                             <h1>${title}</h1>
                         </div>
                         <div class="admin-actions">
@@ -202,7 +203,9 @@
     }
 
     function todayAppointments(state = data()) {
-        return state.appointments.filter((appointment) => appointment.date === "2026-10-06");
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        return state.appointments.filter((appointment) => appointment.date === today);
     }
 
     function renderDashboard() {
@@ -217,26 +220,26 @@
 
     function renderStaffDashboard(state, user) {
         const today = todayAppointments(state);
-        const waiting = today.filter((item) => item.status === "Waiting").length;
+        const checkedIn = today.filter((item) => item.status === "Checked In").length;
         const pendingOrders = state.orders.filter((item) => item.status === "Pending Packing").length;
         const lowStock = state.products.filter((item) => item.stock <= item.lowStockThreshold).length;
         byId("adminPage").innerHTML = `
             ${pageHero(`Good Morning, ${user.name}`, "Your clinic at a glance. Keep today's care moving smoothly.", `<button class="primary-btn" id="dashboardCreateAppointment" type="button"><span class="btn-icon icon-plus"></span>New Appointment</button>`)}
             <div class="kpi-grid">
                 ${kpi(today.length, "Today's Appointments", "+2 compared with yesterday", "admin-appointments.html?date=today", "calendar", true)}
-                ${kpi(waiting, "Checked In", "Patients currently waiting", "admin-appointments.html?status=Waiting", "users")}
+                ${kpi(checkedIn, "Checked In", "Patients who have arrived", "admin-appointments.html?status=Checked%20In", "users")}
                 ${kpi(pendingOrders, "Orders To Process", "Pending packing", "admin-orders.html?status=Pending%20Packing", "box")}
                 ${kpi(lowStock, "Low Stock Products", "Needs restock review", "admin-products.html?stock=low", "bag")}
             </div>
             <div class="dashboard-layout">
                 <section class="panel">
-                    <div class="panel-header"><div><h2>Today's Appointments</h2><p>3 appointments - 1 patient currently waiting</p></div><a class="secondary-btn" href="admin-appointments.html">View all</a></div>
+                    <div class="panel-header"><div><h2>Today's Appointments</h2><p>${today.length} appointments · ${checkedIn} checked in</p></div><a class="secondary-btn" href="admin-appointments.html">View all</a></div>
                     ${table(["Time", "Patient / Service", "Doctor / Status", "Action"], today.map((item) => `
                         <tr>
                             <td>${formatTime(item.time)}</td>
                             <td><div class="person-cell">${patientAvatar(item.patient)}<span><strong>${item.patient}</strong><small>${item.service}</small></span></div></td>
                             <td><strong>${item.doctor}</strong><br>${badge(item.status)}</td>
-                            <td class="row-actions"><button class="mini-btn" data-view-appointment="${item.id}">View</button><button class="mini-btn" data-check-in="${item.id}">Check-in</button></td>
+                            <td class="row-actions"><button class="mini-btn" data-view-appointment="${item.id}">View</button>${["Scheduled", "Rescheduled"].includes(item.status) ? `<button class="mini-btn" data-check-in="${item.id}">Check-in</button>` : ""}</td>
                         </tr>
                     `))}
                     <p class="table-note"><span class="nav-icon icon-users"></span> Patient queue - Jamie Lee is waiting for TCM Consultation.</p>
@@ -247,7 +250,7 @@
                     <p>Alerts to keep the clinic on track</p>
                     <div class="alert-list">
                         <a class="alert-card alert-red" href="admin-products.html?stock=low"><span class="nav-icon icon-alert"></span><strong>Ginseng stock is below 5 units.</strong><small>Review inventory</small></a>
-                        <a class="alert-card alert-gold" href="admin-appointments.html?status=Pending%20Confirmation"><span class="nav-icon icon-clipboard"></span><strong>2 appointments require confirmation.</strong><small>Review appointments</small></a>
+                        <a class="alert-card alert-gold" href="admin-appointments.html?date=upcoming"><span class="nav-icon icon-clipboard"></span><strong>Appointments are booked automatically.</strong><small>Check patients in when they arrive</small></a>
                         <a class="alert-card alert-green" href="admin-orders.html?status=Pending%20Packing"><span class="nav-icon icon-box"></span><strong>2 orders are waiting for packing.</strong><small>Process orders</small></a>
                     </div>
                     </section>
@@ -278,7 +281,7 @@
             <h2>Good Morning, ${user.name}</h2>
             <div class="kpi-grid">
                 ${kpi(mine.length, "Today's Patients", "Assigned to you", "admin-appointments.html?date=today")}
-                ${kpi(mine.filter((item) => item.status === "Waiting").length, "Waiting", "Ready to start", "admin-appointments.html?status=Waiting")}
+                ${kpi(mine.filter((item) => item.status === "Checked In").length, "Checked In", "Ready to start", "admin-appointments.html?status=Checked%20In")}
                 ${kpi(mine.filter((item) => item.status === "Completed").length, "Completed Today", "Consultations completed", "admin-appointments.html?status=Completed")}
                 ${kpi(state.messages.filter((item) => item.doctorId === user.id).reduce((sum, item) => sum + item.unread, 0), "Unread Messages", "Patient conversations", "admin-messages.html?filter=unread")}
             </div>
@@ -287,7 +290,7 @@
                     <div class="panel-header"><h2>Today's Schedule</h2><a class="secondary-btn" href="admin-appointments.html">Open schedule</a></div>
                     ${table(["Time", "Patient", "Service", "Status", "Action"], mine.map((item) => `
                         <tr><td>${formatTime(item.time)}</td><td>${item.patient}</td><td>${item.service}</td><td>${badge(item.status)}</td>
-                        <td class="row-actions"><button class="mini-btn" data-start-consult="${item.id}">${item.status === "Waiting" ? "Start" : "View"}</button></td></tr>
+                        <td class="row-actions">${item.status === "Checked In" ? `<button class="mini-btn" data-start-consult="${item.id}">Start</button>` : `<button class="mini-btn" data-view-appointment="${item.id}">View</button>`}</td></tr>
                     `))}
                 </section>
                 <aside class="panel">
@@ -325,22 +328,32 @@
             ${pageHero("Keep every visit on track", "Manage bookings, arrival status and appointment details in one place.", user.role === "staff" ? `<button class="primary-btn" id="createAppointment" type="button"><span class="btn-icon icon-plus"></span>Create Appointment</button>` : "")}
             <div class="panel appointment-panel">
                 <div class="panel-header">
-                    <div><h2>Appointments</h2><p>${records} records - 6-7 October 2026 - all statuses</p></div>
+                    <div><h2>Appointments</h2><p id="appointmentResultSummary">${records} records</p></div>
                     <div class="segmented"><button class="secondary-btn" id="calendarView">Calendar View</button><button class="primary-btn" id="tableView">Table View</button></div>
                 </div>
                 <div class="appointment-tabs">
                     <button class="active" type="button" data-status-tab="">All appointments <span>${records}</span></button>
-                    <button type="button" data-status-tab="Waiting">Waiting <span>${state.appointments.filter((item) => item.status === "Waiting").length}</span></button>
-                    <button type="button" data-status-tab="Confirmed">Confirmed <span>${state.appointments.filter((item) => item.status === "Confirmed").length}</span></button>
-                    <button type="button" data-status-tab="Pending Confirmation">Pending Confirmation <span>${state.appointments.filter((item) => item.status === "Pending Confirmation").length}</span></button>
+                    <button type="button" data-status-tab="Scheduled">Scheduled <span>${state.appointments.filter((item) => item.status === "Scheduled").length}</span></button>
+                    <button type="button" data-status-tab="Checked In">Checked In <span>${state.appointments.filter((item) => item.status === "Checked In").length}</span></button>
                     <button type="button" data-status-tab="Completed">Completed <span>${state.appointments.filter((item) => item.status === "Completed").length}</span></button>
                 </div>
                 <div class="table-toolbar">
-                    <label class="toolbar-search"><input id="appointmentSearch" placeholder="Search patient or appointment ID"></label>
-                    <label><select id="filterDate"><option value="">All Dates</option><option value="today">Today</option><option value="week">This Week</option></select></label>
+                    <label class="toolbar-search"><span>Search patient or appointment ID</span><input id="appointmentSearch" placeholder="e.g. patient name, phone or appointment ID"></label>
+                    <label><span>Appointment date</span><select id="filterDate">
+                        <option value="upcoming">Upcoming · 30 days</option>
+                        <option value="today">Today</option>
+                        <option value="tomorrow">Tomorrow</option>
+                        <option value="next7">Next 7 days</option>
+                        <option value="week">This week</option>
+                        <option value="next30">Next 30 days</option>
+                        <option value="custom">Choose a date…</option>
+                        <option value="past">Past appointments</option>
+                        <option value="">All dates</option>
+                    </select></label>
+                    <label class="custom-date-filter" id="customDateFilter" hidden><span>Choose date</span><input id="filterCustomDate" type="date" aria-label="Choose appointment date"></label>
                     <label><select id="filterDoctor" ${user.role === "doctor" ? "disabled" : ""}>${doctorOptions}</select></label>
                     <label><select id="filterService"><option value="">All Services</option><option>TCM Consultation</option><option>Acupuncture</option><option>Cupping</option><option>Herbal Medicine</option></select></label>
-                    <label><select id="filterStatus"><option value="">All</option><option>Pending Confirmation</option><option>Confirmed</option><option>Waiting</option><option>In Consultation</option><option>Completed</option><option>Cancelled</option><option>Rescheduled</option></select></label>
+                    <label><select id="filterStatus"><option value="">All</option><option>Scheduled</option><option>Checked In</option><option>In Consultation</option><option>Completed</option><option>Cancelled</option><option>Rescheduled</option></select></label>
                 </div>
                 <div id="appointmentContent"></div>
             </div>
@@ -348,21 +361,32 @@
                 <section class="selected-appointment" id="selectedAppointment"></section>
                 <aside class="panel manage-card">
                     <h2>Manage this appointment</h2>
-                    <div class="row-actions"><button class="primary-btn" data-check-in="APT-001"><span class="btn-icon icon-users"></span>Check-in</button><button class="secondary-btn" data-view-appointment="APT-001">View</button></div>
-                    <hr>
-                    <div class="link-row"><button class="text-link" data-reschedule="APT-001">Reschedule</button><button class="text-link danger-text" data-cancel="APT-001">Cancel appointment</button></div>
                     <p>Select a record to review its details and available actions.</p>
                 </aside>
             </div>
         `;
-        byId("filterDate").value = params.get("date") || "";
-        byId("filterStatus").value = params.get("status") || "";
+        byId("filterDate").value = params.has("date")
+            ? params.get("date")
+            : params.has("status") ? "" : "upcoming";
+        const requestedStatus = params.get("status") || "";
+        byId("filterStatus").value = ({
+            "Pending Confirmation": "Scheduled",
+            Confirmed: "Scheduled",
+            Waiting: "Checked In"
+        })[requestedStatus] || requestedStatus;
+        byId("customDateFilter").hidden = byId("filterDate").value !== "custom";
         if (user.role === "doctor") byId("filterDoctor").value = user.id;
-        ["appointmentSearch", "filterDate", "filterDoctor", "filterService", "filterStatus"].forEach((id) => byId(id).addEventListener("input", renderAppointmentTable));
+        byId("filterDate").addEventListener("change", () => {
+            byId("customDateFilter").hidden = byId("filterDate").value !== "custom";
+            renderAppointmentTable();
+        });
+        ["appointmentSearch", "filterDoctor", "filterService", "filterStatus", "filterCustomDate"].forEach((id) => byId(id).addEventListener("input", renderAppointmentTable));
         document.querySelectorAll("[data-status-tab]").forEach((button) => button.addEventListener("click", () => {
             document.querySelectorAll("[data-status-tab]").forEach((item) => item.classList.remove("active"));
             button.classList.add("active");
             byId("filterStatus").value = button.dataset.statusTab;
+            byId("filterDate").value = "";
+            byId("customDateFilter").hidden = true;
             renderAppointmentTable();
         }));
         byId("tableView").addEventListener("click", renderAppointmentTable);
@@ -375,20 +399,61 @@
     function filteredAppointments() {
         const user = current();
         const state = data();
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        const addDays = (date, days) => {
+            const next = new Date(date);
+            next.setDate(next.getDate() + days);
+            return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+        };
+        const weekday = now.getDay();
+        const daysSinceMonday = (weekday + 6) % 7;
+        const weekStartDate = new Date(now);
+        weekStartDate.setDate(now.getDate() - daysSinceMonday);
+        const weekStart = `${weekStartDate.getFullYear()}-${String(weekStartDate.getMonth() + 1).padStart(2, "0")}-${String(weekStartDate.getDate()).padStart(2, "0")}`;
+        const weekEndDate = new Date(weekStartDate);
+        weekEndDate.setDate(weekStartDate.getDate() + 7);
+        const weekEnd = `${weekEndDate.getFullYear()}-${String(weekEndDate.getMonth() + 1).padStart(2, "0")}-${String(weekEndDate.getDate()).padStart(2, "0")}`;
+        const dateFilter = byId("filterDate")?.value || "";
+        const doctorFilter = user.role === "doctor" ? user.id : byId("filterDoctor")?.value;
+        const query = (byId("appointmentSearch")?.value || "").trim().toLowerCase();
         return state.appointments.filter((item) => {
-            const dateFilter = byId("filterDate")?.value || "";
-            const doctorFilter = user.role === "doctor" ? user.id : byId("filterDoctor")?.value;
-            const query = (byId("appointmentSearch")?.value || "").toLowerCase();
+            const matchesDate = dateFilter === "today" ? item.date === today
+                : dateFilter === "tomorrow" ? item.date === addDays(today, 1)
+                    : dateFilter === "next7" ? item.date >= today && item.date < addDays(today, 7)
+                        : dateFilter === "week" ? item.date >= weekStart && item.date < weekEnd
+                            : dateFilter === "next30" || dateFilter === "upcoming" ? item.date >= today && item.date < addDays(today, 30)
+                                : dateFilter === "past" ? item.date < today
+                                    : dateFilter === "custom" ? Boolean(byId("filterCustomDate").value) && item.date === byId("filterCustomDate").value
+                                        : true;
             return (!query || `${item.id} ${item.patient} ${item.contact}`.toLowerCase().includes(query)) &&
-                (!dateFilter || item.date === "2026-10-06" || dateFilter !== "today") &&
+                matchesDate &&
                 (!doctorFilter || item.doctorId === doctorFilter) &&
                 (!byId("filterService")?.value || item.service === byId("filterService").value) &&
                 (!byId("filterStatus")?.value || item.status === byId("filterStatus").value);
+        }).sort((a, b) => {
+            const aTime = `${a.date || ""} ${a.time || ""}`;
+            const bTime = `${b.date || ""} ${b.time || ""}`;
+            if (dateFilter === "past") return bTime.localeCompare(aTime);
+            return aTime.localeCompare(bTime);
         });
     }
 
     function renderAppointmentTable() {
         const records = filteredAppointments();
+        const dateFilter = byId("filterDate").value;
+        const dateLabel = {
+            upcoming: "upcoming 30 days",
+            today: "today",
+            tomorrow: "tomorrow",
+            next7: "next 7 days",
+            week: "this week",
+            next30: "next 30 days",
+            custom: byId("filterCustomDate").value || "selected date",
+            past: "past appointments"
+        }[dateFilter] || "all dates";
+        byId("appointmentResultSummary").textContent =
+            `${records.length} ${records.length === 1 ? "appointment" : "appointments"} · ${dateLabel} · sorted by date and time`;
         byId("appointmentContent").innerHTML = table(
             ["Patient / Contact", "Service", "Date / Time", "Doctor / Room", "Status", "Actions"],
             records.map((item, index) => `
@@ -399,14 +464,14 @@
                     <td>${item.doctor}<br><small>${item.room}</small></td>
                     <td>${badge(item.status)}</td>
                     <td class="row-actions">
-                        <button class="mini-btn ${index === 0 ? "primary-mini" : ""}" data-check-in="${item.id}">${item.status === "Pending Confirmation" ? "Confirm" : "Check-in"}</button>
+                        ${["Scheduled", "Rescheduled"].includes(item.status) ? `<button class="mini-btn ${index === 0 ? "primary-mini" : ""}" data-check-in="${item.id}">Check-in</button>` : ""}
                         <button class="text-link" data-view-appointment="${item.id}">View</button>
                         <button class="icon-more" data-select-appointment="${item.id}" aria-label="Select appointment"></button>
                     </td>
                 </tr>
             `)
         );
-        bindAppointmentButtons();
+        bindAppointmentButtons(byId("appointmentContent"));
         document.querySelectorAll("[data-select-appointment]").forEach((button) => button.addEventListener("click", () => {
             const item = data().appointments.find((appointment) => appointment.id === button.dataset.selectAppointment);
             drawSelectedAppointment(item);
@@ -416,9 +481,13 @@
 
     function drawSelectedAppointment(item) {
         const panel = byId("selectedAppointment");
+        const manageCard = document.querySelector(".manage-card");
         if (!panel) return;
         if (!item) {
             panel.innerHTML = `<h2>Selected appointment</h2><p>No appointment selected.</p>`;
+            if (manageCard) {
+                manageCard.innerHTML = `<h2>Manage this appointment</h2><p>Select a record to review its details and available actions.</p>`;
+            }
             return;
         }
         panel.innerHTML = `
@@ -432,6 +501,24 @@
                 <div><dt>Doctor & Room</dt><dd>${item.doctor} - ${item.room}</dd></div>
             </dl>
         `;
+        if (manageCard) {
+            const canCheckIn = ["Scheduled", "Rescheduled"].includes(item.status);
+            const actions = [
+                canCheckIn
+                    ? `<button class="primary-btn" data-check-in="${item.id}"><span class="btn-icon icon-users"></span>Check-in</button>`
+                    : item.status === "Checked In"
+                        ? `<button class="primary-btn" data-start-consult="${item.id}">Start Consultation</button>`
+                        : "",
+                `<button class="secondary-btn" data-view-appointment="${item.id}">View</button>`
+            ].filter(Boolean).join("");
+            manageCard.innerHTML = `
+                <h2>Manage this appointment</h2>
+                <div class="row-actions">${actions}</div>
+                ${canCheckIn ? `<hr><div class="link-row"><button class="text-link" data-reschedule="${item.id}">Reschedule</button><button class="text-link danger-text" data-cancel="${item.id}">Cancel appointment</button></div>` : ""}
+                <p>${canCheckIn ? "Check in the patient when they arrive." : item.status === "Checked In" ? "Patient has arrived and is ready for consultation." : "No further actions are available."}</p>
+            `;
+            bindAppointmentButtons(manageCard);
+        }
     }
 
     function renderCalendar() {
@@ -446,24 +533,26 @@
             });
         });
         byId("appointmentContent").innerHTML = `<div class="calendar-grid">${rows.join("")}</div>`;
-        bindAppointmentButtons();
+        bindAppointmentButtons(byId("appointmentContent"));
     }
 
-    function bindAppointmentButtons() {
-        document.querySelectorAll("[data-view-appointment]").forEach((button) => button.addEventListener("click", () => openAppointmentDetails(button.dataset.viewAppointment)));
-        document.querySelectorAll("[data-check-in]").forEach((button) => button.addEventListener("click", () => updateAppointment(button.dataset.checkIn, "Waiting", "Patient checked in.")));
-        document.querySelectorAll("[data-start-consult]").forEach((button) => button.addEventListener("click", () => {
-            updateAppointment(button.dataset.startConsult, "In Consultation", "Consultation started.", false);
-            window.location.href = `admin-care-plan.html?appointment=${encodeURIComponent(button.dataset.startConsult)}`;
-        }));
-        document.querySelectorAll("[data-reschedule]").forEach((button) => button.addEventListener("click", () => openReschedule(button.dataset.reschedule)));
-        document.querySelectorAll("[data-cancel]").forEach((button) => button.addEventListener("click", () => openCancel(button.dataset.cancel)));
+    function bindAppointmentButtons(root = document) {
+        root.querySelectorAll("[data-view-appointment]").forEach((button) => button.addEventListener("click", () => openAppointmentDetails(button.dataset.viewAppointment)));
+        root.querySelectorAll("[data-check-in]").forEach((button) => button.addEventListener("click", () => checkInAppointment(button.dataset.checkIn)));
+        root.querySelectorAll("[data-start-consult]").forEach((button) => button.addEventListener("click", () => startConsultation(button.dataset.startConsult)));
+        root.querySelectorAll("[data-reschedule]").forEach((button) => button.addEventListener("click", () => openReschedule(button.dataset.reschedule)));
+        root.querySelectorAll("[data-cancel]").forEach((button) => button.addEventListener("click", () => openCancel(button.dataset.cancel)));
     }
 
     function openAppointmentDetails(id) {
         const state = data();
         const item = state.appointments.find((appointment) => appointment.id === id);
         if (!item) return;
+        const action = ["Scheduled", "Rescheduled"].includes(item.status)
+            ? `<button class="primary-btn" data-check-in="${item.id}">Check-in</button>`
+            : item.status === "Checked In"
+                ? `<button class="primary-btn" data-start-consult="${item.id}">Start Consultation</button>`
+                : "";
         openModal("Appointment Details", `
             <dl>
                 <dt>Appointment ID</dt><dd>${item.id}</dd>
@@ -476,9 +565,21 @@
                 <dt>Room</dt><dd>${item.room}</dd>
                 <dt>Status</dt><dd>${badge(item.status)}</dd>
             </dl>
-        `, `<button class="secondary-btn" data-confirm="${item.id}">Confirm</button><button class="primary-btn" data-start-consult="${item.id}">Start Consultation</button>`);
-        document.querySelector("[data-confirm]")?.addEventListener("click", () => updateAppointment(id, "Confirmed", "Appointment confirmed."));
-        bindAppointmentButtons();
+        `, action);
+        bindAppointmentButtons(document.querySelector(".admin-modal"));
+    }
+
+    function checkInAppointment(id) {
+        const item = data().appointments.find((appointment) => appointment.id === id);
+        if (!item || !["Scheduled", "Rescheduled"].includes(item.status)) return;
+        updateAppointment(id, "Checked In", "Patient checked in.");
+    }
+
+    function startConsultation(id) {
+        const item = data().appointments.find((appointment) => appointment.id === id);
+        if (!item || item.status !== "Checked In") return;
+        updateAppointment(id, "In Consultation", "Consultation started.", false);
+        window.location.href = `admin-care-plan.html?appointment=${encodeURIComponent(id)}`;
     }
 
     function updateAppointment(id, status, message, refresh = true) {
@@ -567,7 +668,7 @@
                 doctorId: doctor.id,
                 doctor: doctor.name,
                 room: formData.get("room"),
-                status: "Pending Confirmation"
+                status: "Scheduled"
             });
             save(state);
             showToast("Appointment created.");
@@ -760,8 +861,20 @@
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
     }
 
-    function carePlanProductName(state, productId) {
-        return state.products.find((product) => product.id === productId)?.name || "Not selected";
+    function careCommandFormula(state, notes) {
+        if (notes.formula) return notes.formula;
+        if (notes.productId) {
+            return state.products.find((product) => product.id === notes.productId)?.name || "";
+        }
+        return "";
+    }
+
+    function careFollowUpDays(notes) {
+        const options = ["3 days", "7 days", "14 days"];
+        if (options.includes(notes.followUpRecommendation)) {
+            return notes.followUpRecommendation;
+        }
+        return options.includes(notes.followUp) ? notes.followUp : "";
     }
 
     function renderCarePlan() {
@@ -869,21 +982,16 @@
     }
 
     function carePlanForm(state, appointment, notes) {
+        const followUpDays = careFollowUpDays(notes);
         return `
             <section class="panel" style="margin-top:18px">
                 <h2>Doctor Consultation</h2>
                 <form class="form-grid" id="carePlanForm">
-                    <label class="full"><span>Doctor Notes</span><textarea name="notes" rows="5">${notes.notes || ""}</textarea></label>
-                    <label><span>Wang</span><input name="wang" value="${notes.wang || ""}"></label><label><span>Wen</span><input name="wen" value="${notes.wen || ""}"></label>
-                    <label><span>Wen Questions</span><input name="questioning" value="${notes.questioning || ""}"></label><label><span>Qie</span><input name="qie" value="${notes.qie || ""}"></label>
-                    <label class="full"><span>Care Recommendation</span><textarea name="recommendation" rows="4">${notes.recommendation || ""}</textarea></label>
-                    <label><span>Herbal Wellness Product</span><select name="productId"><option value="">Select Product</option>${state.products.filter((item) => item.status === "Active").map((item) => `<option value="${item.id}" ${notes.productId === item.id ? "selected" : ""}>${item.name}</option>`).join("")}</select></label>
-                    <label><span>Quantity / Amount</span><input name="quantity" placeholder="e.g. 2 packs" value="${notes.quantity || ""}"></label>
-                    <label><span>Days Supply</span><input name="daysSupply" placeholder="e.g. 7 days" value="${notes.daysSupply || ""}"></label>
-                    <label><span>Usage</span><input name="usage" value="${notes.usage || ""}"></label>
-                    <label class="full"><span>Additional Notes</span><textarea name="productNotes" rows="3">${notes.productNotes || ""}</textarea></label>
-                    <label><span>Follow-up Recommendation</span><select name="followUp">${["No follow-up", "7 days", "14 days", "30 days", "Custom date"].map((item) => `<option ${notes.followUp === item ? "selected" : ""}>${item}</option>`).join("")}</select></label>
-                    <label><span>Custom Date</span><input type="date" name="followUpDate" value="${notes.followUpDate || ""}"></label>
+                    <label class="full"><span>Doctor Notes — Patient Problem</span><textarea name="notes" rows="5" placeholder="Record the patient's main problem and relevant consultation notes.">${escapeHtml(notes.notes || "")}</textarea></label>
+                    <div class="care-command-heading full"><h3>Care Command</h3><p>Instructions for staff to prepare and coordinate the patient's care.</p></div>
+                    <label class="full"><span>Traditional Chinese Medicine / Medicine to Prepare</span><textarea name="formula" rows="3" placeholder="Enter the formula or medicine staff should prepare. This is separate from products sold in the shop.">${escapeHtml(careCommandFormula(state, notes))}</textarea></label>
+                    <label><span>Medicine Supply (Days)</span><input name="daysSupply" placeholder="e.g. 7 days" value="${escapeHtml(notes.daysSupply || "")}"></label>
+                    <label class="full"><span>Follow-up Recommendation</span><select name="followUpRecommendation"><option value="">Select follow-up timing</option>${["3 days", "7 days", "14 days"].map((days) => `<option value="${days}" ${followUpDays === days ? "selected" : ""}>${days}</option>`).join("")}</select></label>
                     <label class="full"><button class="secondary-btn" type="button" id="saveDraft">Save Draft</button> <button class="primary-btn" type="submit">Save Care Plan</button> <button class="secondary-btn" type="button" id="printCarePlan">Print Care Plan</button> <button class="danger-btn" type="button" id="completeConsultation">Complete Consultation</button></label>
                 </form>
             </section>
@@ -893,21 +1001,17 @@
     function carePlanReadOnly(state, plan) {
         const notes = plan?.notes || {};
         if (!plan) {
-            return `<section class="panel" style="margin-top:18px"><h2>Doctor Care Plan</h2><p>No care plan has been saved for this appointment yet.</p></section>`;
+            return `<section class="panel staff-care-command" style="margin-top:18px"><h2>Care Command for Staff</h2><p>The doctor has not saved care instructions for this appointment yet.</p></section>`;
         }
+        const followUpRecommendation =
+            careFollowUpDays(notes) || "No follow-up recommendation recorded";
         return `
-            <section class="panel" style="margin-top:18px">
-                <div class="selected-head"><h2>Doctor Care Plan</h2>${badge(plan.status)}</div>
-                <dl class="detail-grid">
-                    <div><dt>Doctor Notes</dt><dd>${notes.notes || "Not recorded"}</dd></div>
-                    <div><dt>Care Recommendation</dt><dd>${notes.recommendation || "Not recorded"}</dd></div>
-                    <div><dt>Herbal Product</dt><dd>${carePlanProductName(state, notes.productId)}</dd></div>
-                    <div><dt>Quantity / Days</dt><dd>${notes.quantity || "Not recorded"} / ${notes.daysSupply || "Not recorded"}</dd></div>
-                    <div><dt>Usage</dt><dd>${notes.usage || "Not recorded"}</dd></div>
-                    <div><dt>Follow-up</dt><dd>${notes.followUp || "No follow-up"} ${notes.followUpDate ? `- ${shortDate(notes.followUpDate)}` : ""}</dd></div>
-                    <div><dt>Wang / Wen</dt><dd>${notes.wang || "Not recorded"} / ${notes.wen || "Not recorded"}</dd></div>
-                    <div><dt>Wen Questions / Qie</dt><dd>${notes.questioning || "Not recorded"} / ${notes.qie || "Not recorded"}</dd></div>
-                    <div><dt>Additional Notes</dt><dd>${notes.productNotes || "Not recorded"}</dd></div>
+            <section class="panel staff-care-command" style="margin-top:18px">
+                <div class="selected-head"><div><h2>Care Command for Staff</h2><p>Preparation and follow-up instructions from the doctor.</p></div>${badge(plan.status)}</div>
+                <dl class="detail-grid care-command-details">
+                    <div><dt>Medicine / Formula to Prepare</dt><dd>${escapeHtml(careCommandFormula(state, notes) || "Not specified")}</dd></div>
+                    <div><dt>Medicine Supply</dt><dd>${escapeHtml(notes.daysSupply || "Not specified")}</dd></div>
+                    <div class="care-command-follow-up"><dt>Follow-up Recommendation</dt><dd>${escapeHtml(followUpRecommendation)}</dd></div>
                 </dl>
             </section>
         `;
@@ -918,6 +1022,8 @@
             const state = data();
             const formData = new FormData(byId("carePlanForm"));
             const existing = latestCarePlan(state, appointment.id);
+            const previousNotes = { ...(existing?.notes || {}) };
+            delete previousNotes.productId;
             const nextPlan = {
                 id: existing?.id || generateID("CARE"),
                 appointmentId: appointment.id,
@@ -925,7 +1031,10 @@
                 doctorId: appointment.doctorId,
                 status,
                 createdAt: new Date().toISOString(),
-                notes: Object.fromEntries(formData.entries())
+                notes: {
+                    ...previousNotes,
+                    ...Object.fromEntries(formData.entries())
+                }
             };
             if (existing) {
                 state.carePlans = state.carePlans.map((plan) => plan.id === existing.id ? nextPlan : plan);
@@ -1136,16 +1245,26 @@
 
     function renderOrders() {
         const state = data();
-        byId("adminPage").innerHTML = `<section class="panel"><div class="panel-header"><h2>Order Management</h2></div><div class="table-toolbar"><label>Status<select id="orderStatus"><option value="">All</option><option>Pending Payment</option><option>Paid</option><option>Pending Packing</option><option>Packed</option><option>Shipped</option><option>Completed</option><option>Cancelled</option></select></label><label>Payment Method<select id="orderPayment"><option value="">All</option><option>FPX</option><option>Card</option><option>eWallet</option></select></label></div><div id="orderTable"></div></section>`;
+        byId("adminPage").innerHTML = `<section class="panel order-management"><div class="panel-header"><h2>Order Management</h2></div><div class="table-toolbar"><label>Order ID<input id="orderIdSearch" type="search" placeholder="Search order ID"></label><label>Order Date<input id="orderDateFilter" type="date"></label><label>Status<select id="orderStatus"><option value="">All</option><option>Pending Payment</option><option>Paid</option><option>Pending Packing</option><option>Packed</option><option>Shipped</option><option>Completed</option><option>Cancelled</option></select></label><label>Payment Method<select id="orderPayment"><option value="">All</option><option>FPX</option><option>Card</option><option>eWallet</option></select></label></div><div id="orderTable"></div></section>`;
         byId("orderStatus").value = new URLSearchParams(location.search).get("status") || "";
+        ["orderIdSearch", "orderDateFilter"].forEach((id) => {
+            byId(id).addEventListener(id === "orderIdSearch" ? "input" : "change", drawOrders);
+        });
         ["orderStatus", "orderPayment"].forEach((id) => byId(id).addEventListener("change", drawOrders));
         drawOrders();
     }
 
     function drawOrders() {
         const state = data();
-        const rows = state.orders.filter((order) => (!byId("orderStatus").value || order.status === byId("orderStatus").value) && (!byId("orderPayment").value || order.paymentMethod === byId("orderPayment").value)).map((order) => `
-            <tr><td>${order.id}</td><td>${order.customer}</td><td>${shortDate(order.date)}</td><td>${order.items.length}</td><td>${money(order.total)}</td><td>${order.paymentMethod}</td><td>${badge(order.status)}</td><td><button class="mini-btn" data-order="${order.id}">View</button></td></tr>
+        const orderIdQuery = byId("orderIdSearch").value.trim().toLowerCase();
+        const orderDate = byId("orderDateFilter").value;
+        const rows = state.orders.filter((order) =>
+            (!orderIdQuery || String(order.id).toLowerCase().includes(orderIdQuery)) &&
+            (!orderDate || String(order.date).slice(0, 10) === orderDate) &&
+            (!byId("orderStatus").value || order.status === byId("orderStatus").value) &&
+            (!byId("orderPayment").value || order.paymentMethod === byId("orderPayment").value)
+        ).map((order) => `
+            <tr><td>${escapeHtml(order.id)}</td><td>${escapeHtml(order.customer)}</td><td>${shortDate(order.date)}</td><td>${order.items.length}</td><td>${money(order.total)}</td><td>${escapeHtml(order.paymentMethod)}</td><td>${badge(order.status)}</td><td><button class="mini-btn" data-order="${escapeHtml(order.id)}">View</button></td></tr>
         `);
         byId("orderTable").innerHTML = table(["Order ID", "Customer", "Order Date", "Items", "Total", "Payment Method", "Status", "Actions"], rows);
         document.querySelectorAll("[data-order]").forEach((button) => button.addEventListener("click", () => openOrder(button.dataset.order)));
@@ -1155,8 +1274,8 @@
         const state = data();
         const order = state.orders.find((item) => item.id === id);
         openModal("Order Information", `
-            <dl><dt>Order ID</dt><dd>${order.id}</dd><dt>Customer</dt><dd>${order.customer}</dd><dt>Phone</dt><dd>${order.phone}</dd><dt>Date</dt><dd>${shortDate(order.date)}</dd><dt>Payment</dt><dd>${order.paymentMethod}</dd><dt>Products</dt><dd>${order.items.map((item) => `${item.name} x ${item.quantity} ${money(item.price * item.quantity)}`).join("<br>")}<br><strong>Total ${money(order.total)}</strong></dd></dl>
-            <form class="form-grid" id="shippingForm"><label><span>Courier</span><input name="courier" value="${order.courier || ""}" placeholder="J&T Express"></label><label><span>Tracking Number</span><input name="tracking" value="${order.tracking || ""}" placeholder="JNT123456789"></label></form>
+            <dl><dt>Order ID</dt><dd>${escapeHtml(order.id)}</dd><dt>Customer</dt><dd>${escapeHtml(order.customer)}</dd><dt>Phone</dt><dd>${escapeHtml(order.phone || "Not provided")}</dd><dt>Date</dt><dd>${shortDate(order.date)}</dd><dt>Payment</dt><dd>${escapeHtml(order.paymentMethod)}</dd><dt>Products</dt><dd>${order.items.map((item) => `${escapeHtml(item.name)} x ${Number(item.quantity) || 0} ${money(item.price * item.quantity)}`).join("<br>")}<br><strong>Total ${money(order.total)}</strong></dd></dl>
+            <form class="form-grid" id="shippingForm"><label><span>Courier</span><input name="courier" value="${escapeHtml(order.courier || "")}" placeholder="J&T Express"></label><label><span>Tracking Number</span><input name="tracking" value="${escapeHtml(order.tracking || "")}" placeholder="JNT123456789"></label></form>
         `, `<button class="secondary-btn" data-order-status="Packed">Mark Packed</button><button class="secondary-btn" data-order-status="Shipped">Mark Shipped</button><button class="primary-btn" data-order-status="Completed">Complete</button>`);
         document.querySelectorAll("[data-order-status]").forEach((button) => button.addEventListener("click", () => {
             const formData = new FormData(byId("shippingForm"));
@@ -1174,25 +1293,139 @@
         const state = data();
         const user = current();
         const messages = state.messages.filter((item) => user.role === "staff" || item.doctorId === user.id);
-        byId("adminPage").innerHTML = `<section class="panel"><div class="panel-header"><h2>Communication Centre</h2></div><div class="dashboard-layout"><div class="alert-list">${messages.map((item) => `<button class="alert-card" data-message="${item.id}"><strong>${item.patient}</strong><br>${item.messages.at(-1)?.text || ""}<br>${item.lastTime} ${item.unread ? `<span class="badge">${item.unread}</span>` : ""}</button>`).join("")}</div><div class="panel" id="chatWindow"><h2>Select a conversation</h2></div></div></section>`;
-        document.querySelectorAll("[data-message]").forEach((button) => button.addEventListener("click", () => openMessage(button.dataset.message)));
+        if (!messages.some((item) => item.id === activeMessageId)) {
+            activeMessageId = messages[0]?.id || "";
+        }
+
+        byId("adminPage").innerHTML = `
+            <section class="panel admin-message-page">
+                <div class="panel-header"><h2>Communication Centre</h2></div>
+                <div class="admin-messenger">
+                    <aside class="admin-conversation-panel">
+                        <div class="admin-conversation-heading">
+                            <h3>Conversations</h3>
+                            <input id="messageSearch" type="search" placeholder="Search conversations" aria-label="Search conversations">
+                        </div>
+                        <div class="admin-conversation-list" id="messageConversationList"></div>
+                    </aside>
+                    <section class="admin-chat-panel" id="chatWindow" aria-label="Conversation"></section>
+                </div>
+            </section>`;
+
+        byId("messageSearch").addEventListener("input", drawMessageList);
+        drawMessageList();
+        if (activeMessageId) openMessage(activeMessageId);
+        else renderEmptyMessage();
+    }
+
+    function drawMessageList() {
+        const state = data();
+        const user = current();
+        const query = byId("messageSearch").value.trim().toLowerCase();
+        const messages = state.messages
+            .filter((item) => user.role === "staff" || item.doctorId === user.id)
+            .filter((item) =>
+                `${item.patient} ${item.patientEmail || ""} ${item.messages.at(-1)?.text || ""}`
+                    .toLowerCase()
+                    .includes(query)
+            );
+        const list = byId("messageConversationList");
+
+        if (messages.length === 0) {
+            list.innerHTML = `<p class="admin-message-empty-list">${query ? "No conversations found." : "No conversations yet."}</p>`;
+            return;
+        }
+
+        list.innerHTML = messages.map((thread) => {
+            const initials = String(thread.patient || "P")
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part) => part[0])
+                .join("")
+                .toUpperCase();
+            const preview = thread.messages.at(-1)?.text || "No messages yet";
+
+            return `
+                <button type="button" class="admin-conversation-item${thread.id === activeMessageId ? " active" : ""}" data-message="${escapeHtml(thread.id)}">
+                    <span class="admin-conversation-avatar">${escapeHtml(initials)}</span>
+                    <span class="admin-conversation-summary">
+                        <strong>${escapeHtml(thread.patient)}</strong>
+                        <span>${escapeHtml(preview)}</span>
+                    </span>
+                    <span class="admin-conversation-meta">
+                        <span>${escapeHtml(thread.lastTime || "")}</span>
+                        ${thread.unread ? `<span class="admin-unread-count">${thread.unread}</span>` : ""}
+                    </span>
+                </button>`;
+        }).join("");
+
+        list.querySelectorAll("[data-message]").forEach((button) => {
+            button.addEventListener("click", () => openMessage(button.dataset.message));
+        });
+    }
+
+    function renderEmptyMessage() {
+        byId("chatWindow").innerHTML = `
+            <div class="admin-chat-empty">
+                <span class="admin-chat-empty-icon">✉</span>
+                <h3>Select a conversation</h3>
+                <p>Patient messages will appear here.</p>
+            </div>`;
     }
 
     function openMessage(id) {
         const state = data();
         const thread = state.messages.find((item) => item.id === id);
+        if (!thread) return;
+        activeMessageId = id;
         const replies = current().role === "staff"
             ? ["Your appointment has been confirmed.", "Please arrive 10 minutes early.", "Your appointment has been rescheduled.", "Your order has been shipped."]
             : ["Thank you for your message.", "Please follow the care instructions provided.", "We recommend discussing this during your next consultation."];
         thread.unread = 0;
         save(state);
-        byId("chatWindow").innerHTML = `<h2>${thread.patient}</h2><div class="alert-list">${thread.messages.map((message) => `<div class="pre-card"><strong>${message.from}</strong>${message.text}<br><small>${message.time}</small></div>`).join("")}</div><form class="form-grid" id="messageReply"><label class="full"><span>Type a message</span><textarea name="text" rows="3"></textarea></label><label><span>Quick replies</span><select id="quickReply"><option value="">Choose reply</option>${replies.map((reply) => `<option>${reply}</option>`).join("")}</select></label><label style="align-self:end"><button class="primary-btn" type="submit">Send</button></label></form>`;
-        byId("quickReply").addEventListener("change", (event) => byId("messageReply").text.value = event.target.value);
+        drawMessageList();
+        const initials = String(thread.patient || "P")
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0])
+            .join("")
+            .toUpperCase();
+        byId("chatWindow").innerHTML = `
+            <header class="admin-chat-heading">
+                <span class="admin-conversation-avatar">${escapeHtml(initials)}</span>
+                <div>
+                    <h3>${escapeHtml(thread.patient)}</h3>
+                    <p>${escapeHtml(thread.patientEmail || "Patient conversation")}</p>
+                </div>
+            </header>
+            <div class="admin-chat-messages" id="adminChatMessages" aria-live="polite">
+                <div class="admin-message-date">Recent messages</div>
+                ${thread.messages.map((message) => `
+                    <article class="admin-chat-bubble ${message.from === "patient" ? "incoming" : "outgoing"}">
+                        <div>${escapeHtml(message.text)}</div>
+                        <time>${escapeHtml(message.time)}</time>
+                    </article>`).join("")}
+            </div>
+            <form class="admin-message-form" id="messageReply">
+                <div class="admin-message-composer">
+                    <textarea name="text" rows="1" maxlength="1000" placeholder="Write a message..." aria-label="Write a message"></textarea>
+                    <button class="primary-btn" type="submit">Send</button>
+                </div>
+                <label class="admin-quick-reply"><span>Quick reply</span><select id="quickReply"><option value="">Choose a reply (optional)</option>${replies.map((reply) => `<option>${escapeHtml(reply)}</option>`).join("")}</select></label>
+            </form>`;
+        const chatMessages = byId("adminChatMessages");
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        byId("quickReply").addEventListener("change", (event) => {
+            byId("messageReply").elements.text.value = event.target.value;
+        });
         byId("messageReply").addEventListener("submit", (event) => {
             event.preventDefault();
-            const text = event.target.text.value.trim();
+            const text = event.target.elements.text.value.trim();
             if (!text) return;
             thread.messages.push({ from: current().role, text, time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) });
+            thread.lastTime = thread.messages.at(-1).time;
             save(state);
             openMessage(id);
         });
@@ -1253,7 +1486,7 @@
         const state = data();
         const completed = state.appointments.filter((item) => item.status === "Completed").length;
         const cancelled = state.appointments.filter((item) => item.status === "Cancelled").length;
-        const pending = state.appointments.filter((item) => item.status.includes("Pending")).length;
+        const scheduled = state.appointments.filter((item) => ["Scheduled", "Rescheduled"].includes(item.status)).length;
         const totalSales = state.orders.reduce((sum, order) => sum + Number(order.total), 0);
         const productCounts = {};
         state.orders.forEach((order) => order.items.forEach((item) => productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity));
@@ -1262,7 +1495,7 @@
                 ${kpi(state.appointments.length, "Total Appointments", "All demo records", "#")}
                 ${kpi(completed, "Completed", "Finished consultations", "#")}
                 ${kpi(cancelled, "Cancelled", "Cancelled appointments", "#")}
-                ${kpi(pending, "Pending", "Needs action", "#")}
+                ${kpi(scheduled, "Scheduled", "Upcoming visits", "#")}
             </div>
             <div class="dashboard-layout">
                 <section class="panel"><h2>Product Analytics</h2><p>Total Orders: ${state.orders.length}</p><p>Total Sales: ${money(totalSales)}</p>${Object.entries(productCounts).map(([name, count]) => `<div class="chart-bar"><span>${name}</span><span><i style="width:${Math.min(100, count * 20)}%"></i></span><strong>${count}</strong></div>`).join("")}</section>
@@ -1280,5 +1513,19 @@
         if (!protect(page)) return;
         renderShell(page, document.body.dataset.title || "Admin Portal");
         pages[page]?.();
+    });
+
+    window.addEventListener("storage", (event) => {
+        if (event.key === "tcmAdminData" && document.body.dataset.page === "appointments") {
+            renderAppointments();
+        }
+
+        if (event.key === "tcmPurchaseHistory" && document.body.dataset.page === "orders") {
+            renderOrders();
+        }
+
+        if (event.key === "tcmMessages" && document.body.dataset.page === "messages") {
+            renderMessages();
+        }
     });
 })();

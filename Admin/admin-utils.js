@@ -1,6 +1,6 @@
 (function () {
     function formatDate(value) {
-        const date = new Date(value);
+        const date = parseDate(value);
         if (Number.isNaN(date.getTime())) return "Date unavailable";
         return date.toLocaleDateString("en-MY", {
             weekday: "long",
@@ -11,13 +11,20 @@
     }
 
     function shortDate(value) {
-        const date = new Date(value);
+        const date = parseDate(value);
         if (Number.isNaN(date.getTime())) return "Date unavailable";
         return date.toLocaleDateString("en-MY", {
+            weekday: "short",
             day: "numeric",
             month: "short",
             year: "numeric"
         });
+    }
+
+    function parseDate(value) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+        if (!match) return new Date(value);
+        return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
     }
 
     function formatTime(value) {
