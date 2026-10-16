@@ -116,64 +116,24 @@
 
     function renderShell(page, title) {
         const user = current();
-        const staffOnly = user.role === "staff";
-        const links = [
-            ["clinic", "dashboard", "Dashboard", "admin-dashboard.html", true, "grid"],
-            ["clinic", "appointments", "Appointments", "admin-appointments.html", true, "calendar"],
-            ["clinic", "schedule", "Doctor Schedule", "admin-schedule.html", staffOnly, "clock"],
-            ["clinic", "patients", "Patients", "admin-patients.html", true, "users"],
-            ["clinic", "carePlan", "Care Plan", "admin-care-plan.html", true, "clipboard"],
-            ["store", "products", "Products", "admin-products.html", staffOnly, "box"],
-            ["store", "orders", "Orders", "admin-orders.html", staffOnly, "bag"],
-            ["communication", "messages", "Messages", "admin-messages.html", true, "message"],
-            ["communication", "feedback", "Feedback", "admin-feedback.html", staffOnly, "feedback"],
-            ["communication", "announcements", "Announcements", "admin-announcements.html", staffOnly, "megaphone"],
-            ["insights", "analytics", "Analytics", "admin-analytics.html", staffOnly, "chart"]
-        ].filter((item) => item[3]);
-        const groups = [
-            ["clinic", "Clinic Operations"],
-            ["store", "Store"],
-            ["communication", "Communication"],
-            ["insights", "Insights"]
-        ];
+        byId("adminDate").textContent = formatDate(new Date());
+        byId("pageTitle").textContent = title;
+        byId("adminAvatar").textContent = user.avatar;
+        byId("adminName").textContent = user.name;
+        byId("adminRole").textContent = user.role;
 
-        document.body.innerHTML = `
-            <div class="admin-shell">
-                <aside class="admin-sidebar">
-                    <a class="admin-logo" href="admin-dashboard.html"><span class="brand-mark">TCM</span><span>TCM SmartCare</span><b>+</b></a>
-                    <p class="portal-label">CLINIC MANAGEMENT</p>
-                    <nav class="admin-nav">
-                        ${groups.map(([group, label]) => {
-                            const groupLinks = links.filter((item) => item[0] === group);
-                            if (!groupLinks.length) return "";
-                            return `<div class="nav-group"><p>${label}</p>${groupLinks.map(([, key, linkLabel, href,, icon]) => `<a class="${key === page ? "active" : ""}" href="${href}"><span class="nav-icon icon-${icon}"></span><span>${linkLabel}</span>${key === page ? `<i></i>` : ""}</a>`).join("")}</div>`;
-                        }).join("")}
-                    </nav>
-                    <div class="sidebar-spacer"></div>
-                    <div class="workspace-card">
-                        <strong>Staff workspace</strong>
-                        <span>Care starts with a connected team.</span>
-                    </div>
-                </aside>
-                <main class="admin-main">
-                    <header class="admin-header">
-                        <div class="admin-title">
-                            <p>${formatDate(new Date())}</p>
-                            <h1>${title}</h1>
-                        </div>
-                        <div class="admin-actions">
-                            <span class="notification-dot" aria-label="Notifications"></span>
-                            <div class="admin-profile">
-                                <div class="avatar">${user.avatar}</div>
-                                <span><strong>${user.name}</strong><small>${user.role}</small></span>
-                            </div>
-                            <button class="ghost-btn" id="adminLogout" type="button">Logout</button>
-                        </div>
-                    </header>
-                    <section class="admin-page" id="adminPage"></section>
-                </main>
-            </div>
-        `;
+        document.querySelectorAll("[data-nav-page]").forEach((link) => {
+            const isActive = link.dataset.navPage === page;
+            link.classList.toggle("active", isActive);
+            if (isActive) link.setAttribute("aria-current", "page");
+            else link.removeAttribute("aria-current");
+        });
+        document.querySelectorAll("[data-staff-only]").forEach((link) => {
+            link.hidden = user.role !== "staff";
+        });
+        document.querySelectorAll(".admin-nav .nav-group").forEach((group) => {
+            group.hidden = !group.querySelector("a:not([hidden])");
+        });
         byId("adminLogout").addEventListener("click", window.TcmAdminAuth.logout);
     }
 
@@ -239,7 +199,7 @@
                             <td>${formatTime(item.time)}</td>
                             <td><div class="person-cell">${patientAvatar(item.patient)}<span><strong>${item.patient}</strong><small>${item.service}</small></span></div></td>
                             <td><strong>${item.doctor}</strong><br>${badge(item.status)}</td>
-                            <td class="row-actions"><button class="mini-btn" data-view-appointment="${item.id}">View</button>${["Scheduled", "Rescheduled"].includes(item.status) ? `<button class="mini-btn" data-check-in="${item.id}">Check-in</button>` : ""}</td>
+                            <td class="row-actions"><button class="mini-btn" data-view-appointment="${item.id}">View</button>${["Scheduled", "Rescheduled"].includes(item.status) ? `<button class="mini-btn" data-check-in="${item.id}">Check-in</button>` : ""}${item.status === "Completed" ? `<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">View Clinical Notes</a>` : ""}</td>
                         </tr>
                     `))}
                     <p class="table-note"><span class="nav-icon icon-users"></span> Patient queue - Jamie Lee is waiting for TCM Consultation.</p>
@@ -290,7 +250,7 @@
                     <div class="panel-header"><h2>Today's Schedule</h2><a class="secondary-btn" href="admin-appointments.html">Open schedule</a></div>
                     ${table(["Time", "Patient", "Service", "Status", "Action"], mine.map((item) => `
                         <tr><td>${formatTime(item.time)}</td><td>${item.patient}</td><td>${item.service}</td><td>${badge(item.status)}</td>
-                        <td class="row-actions">${item.status === "Checked In" ? `<button class="mini-btn" data-start-consult="${item.id}">Start</button>` : `<button class="mini-btn" data-view-appointment="${item.id}">View</button>`}</td></tr>
+                        <td class="row-actions">${item.status === "Checked In" ? `<button class="mini-btn" data-start-consult="${item.id}">Start</button>` : `<button class="mini-btn" data-view-appointment="${item.id}">View</button>`}<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">Clinical Notes</a></td></tr>
                     `))}
                 </section>
                 <aside class="panel">
@@ -466,6 +426,7 @@
                     <td class="row-actions">
                         ${["Scheduled", "Rescheduled"].includes(item.status) ? `<button class="mini-btn ${index === 0 ? "primary-mini" : ""}" data-check-in="${item.id}">Check-in</button>` : ""}
                         <button class="text-link" data-view-appointment="${item.id}">View</button>
+                        ${item.status === "Completed" ? `<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">View Clinical Notes</a>` : current().role === "doctor" ? `<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">Clinical Notes</a>` : ""}
                         <button class="icon-more" data-select-appointment="${item.id}" aria-label="Select appointment"></button>
                     </td>
                 </tr>
@@ -509,7 +470,10 @@
                     : item.status === "Checked In"
                         ? `<button class="primary-btn" data-start-consult="${item.id}">Start Consultation</button>`
                         : "",
-                `<button class="secondary-btn" data-view-appointment="${item.id}">View</button>`
+                    `<button class="secondary-btn" data-view-appointment="${item.id}">View</button>`,
+                    item.status === "Completed"
+                        ? `<a class="secondary-btn" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">View Clinical Notes</a>`
+                        : current().role === "doctor" ? `<a class="secondary-btn" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">Clinical Notes</a>` : ""
             ].filter(Boolean).join("");
             manageCard.innerHTML = `
                 <h2>Manage this appointment</h2>
@@ -553,6 +517,11 @@
             : item.status === "Checked In"
                 ? `<button class="primary-btn" data-start-consult="${item.id}">Start Consultation</button>`
                 : "";
+        const notesAction = item.status === "Completed"
+            ? `<a class="secondary-btn" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">View Clinical Notes</a>`
+            : current().role === "doctor"
+                ? `<a class="secondary-btn" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">Clinical Notes</a>`
+                : "";
         openModal("Appointment Details", `
             <dl>
                 <dt>Appointment ID</dt><dd>${item.id}</dd>
@@ -565,7 +534,7 @@
                 <dt>Room</dt><dd>${item.room}</dd>
                 <dt>Status</dt><dd>${badge(item.status)}</dd>
             </dl>
-        `, action);
+        `, `${action}${notesAction}`);
         bindAppointmentButtons(document.querySelector(".admin-modal"));
     }
 
@@ -890,11 +859,12 @@
         byId("adminPage").innerHTML = `
             <section class="panel care-selector">
                 <div class="panel-header">
-                    <div><h2>Care Plan</h2><p>${user.role === "doctor" ? "Select a patient appointment to write or update the care plan." : "Select a patient appointment to view the doctor's care plan."}</p></div>
+                    <div><h2>Clinical Notes</h2><p>${user.role === "doctor" ? "Select a patient appointment to write or update clinical notes." : "Select a patient appointment to view the doctor's clinical notes."}</p></div>
                     <span>${visibleAppointments.length} records</span>
                 </div>
                 <div class="table-toolbar">
                     <label class="toolbar-search"><input id="careSearch" placeholder="Search patient or appointment ID"></label>
+                    <label><span>Appointment date</span><input id="careDate" type="date" aria-label="Filter clinical notes by appointment date"></label>
                     <label><select id="careDoctor" ${user.role === "doctor" ? "disabled" : ""}>${doctorOptions}</select></label>
                     <label><select id="careService"><option value="">All Services</option><option>TCM Consultation</option><option>Acupuncture</option><option>Cupping</option><option>Herbal Medicine</option></select></label>
                     <label><select id="careStatus"><option value="">All Statuses</option><option>Draft</option><option>Saved</option><option>Completed</option><option>No care plan</option></select></label>
@@ -905,7 +875,9 @@
         `;
 
         if (user.role === "doctor") byId("careDoctor").value = user.id;
-        ["careSearch", "careDoctor", "careService", "careStatus"].forEach((id) => byId(id).addEventListener("input", () => drawCarePlanList()));
+        ["careSearch", "careDate", "careDoctor", "careService", "careStatus"].forEach((id) => {
+            byId(id).addEventListener(id === "careSearch" ? "input" : "change", () => drawCarePlanList());
+        });
         drawCarePlanList(selected?.id);
     }
 
@@ -913,6 +885,7 @@
         const user = current();
         const state = data();
         const query = (byId("careSearch")?.value || "").toLowerCase();
+        const dateFilter = byId("careDate")?.value || "";
         const doctorFilter = user.role === "doctor" ? user.id : byId("careDoctor")?.value;
         const serviceFilter = byId("careService")?.value;
         const statusFilter = byId("careStatus")?.value;
@@ -921,6 +894,7 @@
             const planStatus = plan?.status || "No care plan";
             return (user.role !== "doctor" || item.doctorId === user.id) &&
                 (!query || `${item.id} ${item.patient} ${item.contact}`.toLowerCase().includes(query)) &&
+                (!dateFilter || String(item.date).slice(0, 10) === dateFilter) &&
                 (!doctorFilter || item.doctorId === doctorFilter) &&
                 (!serviceFilter || item.service === serviceFilter) &&
                 (!statusFilter || planStatus === statusFilter);
