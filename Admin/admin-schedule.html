@@ -19,6 +19,24 @@
         </aside>
         <main class="admin-main"><header class="admin-header"><div class="admin-title"><p id="adminDate"></p><h1 id="pageTitle"></h1></div><div class="admin-actions"><span class="notification-dot" aria-label="Notifications"></span><div class="admin-profile"><div class="avatar" id="adminAvatar"></div><span><strong id="adminName"></strong><small id="adminRole"></small></span></div><button class="ghost-btn" id="adminLogout" type="button">Logout</button></div></header><section class="admin-page" id="adminPage"></section></main>
     </div>
+    <template id="admin-schedule-view">
+        <section class="schedule-doctor-bar">
+            <div class="person-cell"><span class="avatar mini-avatar" id="scheduleDoctorAvatar"></span><span><small>Manage availability for</small><strong id="scheduleDoctorName"></strong></span></div>
+            <select id="scheduleDoctor" aria-label="Select doctor schedule"></select>
+            <span class="badge active">Weekly recurring</span><span class="muted-text">Mon - Wed - Fri</span>
+        </section>
+        <div class="info-strip"><span class="nav-icon icon-alert"></span> Set the doctor's recurring availability and date exceptions. This calendar shows working hours, not booked appointments.</div>
+        <div class="schedule-layout">
+            <section class="panel schedule-calendar-panel">
+                <div class="panel-header"><div><h2>5-11 October 2026</h2><p>Weekly availability</p></div><div class="row-actions"><button class="mini-btn" type="button">Today</button><button class="mini-btn" type="button" aria-label="Previous week">‹</button><button class="mini-btn" type="button" aria-label="Next week">›</button></div></div>
+                <div class="schedule-legend"><span></span> Morning availability <span></span> Afternoon availability <span></span> Not available</div>
+                <div id="scheduleCalendar"></div>
+                <div class="schedule-note"><span class="nav-icon icon-clock"></span><strong>30-minute slots - 1 patient per slot</strong><small>12:00-14:00 is a break. Unselected weekdays remain unavailable.</small></div>
+            </section>
+            <aside class="panel schedule-form-panel"><h2>Working hours</h2><p>Recurring weekly schedule</p><form class="form-grid compact-form" id="scheduleForm"></form></aside>
+        </div>
+        <section class="save-bar" id="scheduleSaveBar"></section>
+    </template>
     <script src="admin-data.js"></script>
     <script src="admin-utils.js"></script>
     <script src="admin-auth.js"></script>

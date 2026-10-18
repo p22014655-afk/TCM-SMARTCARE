@@ -13,6 +13,18 @@
             <div class="nav-group"><p>Store</p><a data-nav-page="products" data-staff-only href="admin-products.html"><span class="nav-icon icon-box"></span><span>Products</span></a><a data-nav-page="orders" data-staff-only href="admin-orders.html"><span class="nav-icon icon-bag"></span><span>Orders</span><i></i></a></div><div class="nav-group"><p>Communication</p><a data-nav-page="messages" href="admin-messages.html"><span class="nav-icon icon-message"></span><span>Messages</span></a><a data-nav-page="feedback" data-staff-only href="admin-feedback.html"><span class="nav-icon icon-feedback"></span><span>Feedback</span></a><a data-nav-page="announcements" data-staff-only href="admin-announcements.html"><span class="nav-icon icon-megaphone"></span><span>Announcements</span></a></div><div class="nav-group"><p>Insights</p><a data-nav-page="analytics" data-staff-only href="admin-analytics.html"><span class="nav-icon icon-chart"></span><span>Analytics</span></a></div></nav><div class="sidebar-spacer"></div><div class="workspace-card"><strong>Staff workspace</strong><span>Care starts with a connected team.</span></div></aside>
         <main class="admin-main"><header class="admin-header"><div class="admin-title"><p id="adminDate"></p><h1 id="pageTitle"></h1></div><div class="admin-actions"><span class="notification-dot" aria-label="Notifications"></span><div class="admin-profile"><div class="avatar" id="adminAvatar"></div><span><strong id="adminName"></strong><small id="adminRole"></small></span></div><button class="ghost-btn" id="adminLogout" type="button">Logout</button></div></header><section class="admin-page" id="adminPage"></section></main>
     </div>
+    <template id="admin-order-view">
+        <section class="panel order-management">
+            <div class="panel-header"><h2>Order Management</h2></div>
+            <div class="table-toolbar">
+                <label>Order ID<input id="orderIdSearch" type="search" placeholder="Search order ID"></label>
+                <label>Order Date<input id="orderDateFilter" type="date"></label>
+                <label>Status<select id="orderStatus"><option value="">All</option><option>Pending Payment</option><option>Paid</option><option>Pending Packing</option><option>Packed</option><option>Shipped</option><option>Completed</option><option>Cancelled</option></select></label>
+                <label>Payment Method<select id="orderPayment"><option value="">All</option><option>FPX</option><option>Card</option><option>eWallet</option></select></label>
+            </div>
+            <div id="orderTable"></div>
+        </section>
+    </template>
     <script src="admin-data.js"></script>
     <script src="admin-utils.js"></script>
     <script src="admin-auth.js"></script>

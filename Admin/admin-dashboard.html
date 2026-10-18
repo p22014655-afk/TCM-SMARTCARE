@@ -47,6 +47,50 @@
             <section class="admin-page" id="adminPage"></section>
         </main>
     </div>
+    <template id="admin-staff-dashboard-view">
+        <div class="page-hero"><div><h2 id="staffDashboardGreeting"></h2><p>Your clinic at a glance. Keep today's care moving smoothly.</p></div><button class="primary-btn" id="dashboardCreateAppointment" type="button"><span class="btn-icon icon-plus"></span>New Appointment</button></div>
+        <div class="kpi-grid" id="staffDashboardKpis"></div>
+        <div class="dashboard-layout">
+            <section class="panel">
+                <div class="panel-header"><div><h2>Today's Appointments</h2><p id="staffAppointmentSummary"></p></div><a class="secondary-btn" href="admin-appointments.html">View all</a></div>
+                <div id="staffAppointmentTable"></div>
+                <p class="table-note"><span class="nav-icon icon-users"></span> Patient queue - Jamie Lee is waiting for TCM Consultation.</p>
+            </section>
+            <aside class="dashboard-side">
+                <section class="panel"><h2>Needs your attention</h2><p>Alerts to keep the clinic on track</p>
+                    <div class="alert-list">
+                        <a class="alert-card alert-red" href="admin-products.html?stock=low"><span class="nav-icon icon-alert"></span><strong>Ginseng stock is below 5 units.</strong><small>Review inventory</small></a>
+                        <a class="alert-card alert-gold" href="admin-appointments.html?date=upcoming"><span class="nav-icon icon-clipboard"></span><strong>Appointments are booked automatically.</strong><small>Check patients in when they arrive</small></a>
+                        <a class="alert-card alert-green" href="admin-orders.html?status=Pending%20Packing"><span class="nav-icon icon-box"></span><strong>2 orders are waiting for packing.</strong><small>Process orders</small></a>
+                    </div>
+                </section>
+                <section class="quick-panel"><h2>Quick Actions</h2><div class="quick-grid">
+                    <a class="quick-action" href="admin-products.html?action=create"><span class="nav-icon icon-box"></span>Add Product</a>
+                    <a class="quick-action" href="admin-orders.html"><span class="nav-icon icon-bag"></span>View Orders</a>
+                    <a class="quick-action wide" href="admin-schedule.html"><span class="nav-icon icon-clock"></span>Manage Schedule</a>
+                </div></section>
+            </aside>
+        </div>
+        <section class="timeline-band"><div class="panel-header"><div><h2>Today's care timeline</h2><p>Scheduled appointment times - Tuesday, 6 October</p></div></div><div class="timeline-row" id="staffTimeline"></div></section>
+    </template>
+    <template id="admin-doctor-dashboard-view">
+        <h2 id="doctorDashboardGreeting"></h2>
+        <div class="kpi-grid" id="doctorDashboardKpis"></div>
+        <div class="dashboard-layout">
+            <section class="panel"><div class="panel-header"><h2>Today's Schedule</h2><a class="secondary-btn" href="admin-appointments.html">Open schedule</a></div><div id="doctorAppointmentTable"></div></section>
+            <aside class="panel">
+                <h2>Patient Alerts</h2>
+                <div class="alert-list"><a class="alert-card" href="admin-care-plan.html?appointment=APT-001">Pre-consultation submitted<br><strong>Jamie Lee</strong><br>Appointment: 10:00 AM</a></div>
+                <h2 style="margin-top:22px">Quick Actions</h2>
+                <div class="quick-grid">
+                    <a class="quick-action" href="admin-appointments.html">Today's Appointments</a>
+                    <a class="quick-action" href="admin-patients.html">My Patients</a>
+                    <a class="quick-action" href="admin-care-plan.html">Pre-Consultation</a>
+                    <a class="quick-action" href="admin-messages.html">Messages</a>
+                </div>
+            </aside>
+        </div>
+    </template>
     <script src="admin-data.js"></script>
     <script src="admin-utils.js"></script>
     <script src="admin-auth.js"></script>

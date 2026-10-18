@@ -27,6 +27,37 @@
         </aside>
         <main class="admin-main"><header class="admin-header"><div class="admin-title"><p id="adminDate"></p><h1 id="pageTitle"></h1></div><div class="admin-actions"><span class="notification-dot" aria-label="Notifications"></span><div class="admin-profile"><div class="avatar" id="adminAvatar"></div><span><strong id="adminName"></strong><small id="adminRole"></small></span></div><button class="ghost-btn" id="adminLogout" type="button">Logout</button></div></header><section class="admin-page" id="adminPage"></section></main>
     </div>
+    <template id="admin-appointment-view">
+        <div class="page-hero">
+            <div><h2>Keep every visit on track</h2><p>Manage bookings, arrival status and appointment details in one place.</p></div>
+            <button class="primary-btn" id="createAppointment" type="button"><span class="btn-icon icon-plus"></span>Create Appointment</button>
+        </div>
+        <div class="panel appointment-panel">
+            <div class="panel-header">
+                <div><h2>Appointments</h2><p id="appointmentResultSummary"></p></div>
+                <div class="segmented"><button class="secondary-btn" id="calendarView" type="button">Calendar View</button><button class="primary-btn" id="tableView" type="button">Table View</button></div>
+            </div>
+            <div class="appointment-tabs">
+                <button class="active" type="button" data-status-tab="">All appointments <span id="allAppointmentCount"></span></button>
+                <button type="button" data-status-tab="Scheduled">Scheduled <span id="scheduledAppointmentCount"></span></button>
+                <button type="button" data-status-tab="Checked In">Checked In <span id="checkedInAppointmentCount"></span></button>
+                <button type="button" data-status-tab="Completed">Completed <span id="completedAppointmentCount"></span></button>
+            </div>
+            <div class="table-toolbar">
+                <label class="toolbar-search"><span>Search patient or appointment ID</span><input id="appointmentSearch" placeholder="e.g. patient name, phone or appointment ID"></label>
+                <label><span>Appointment date</span><select id="filterDate"><option value="upcoming">Upcoming · 30 days</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option><option value="next7">Next 7 days</option><option value="week">This week</option><option value="next30">Next 30 days</option><option value="custom">Choose a date…</option><option value="past">Past appointments</option><option value="">All dates</option></select></label>
+                <label class="custom-date-filter" id="customDateFilter" hidden><span>Choose date</span><input id="filterCustomDate" type="date" aria-label="Choose appointment date"></label>
+                <label><select id="filterDoctor"></select></label>
+                <label><select id="filterService"><option value="">All Services</option><option>TCM Consultation</option><option>Acupuncture</option><option>Cupping</option><option>Herbal Medicine</option></select></label>
+                <label><select id="filterStatus"><option value="">All</option><option>Scheduled</option><option>Checked In</option><option>In Consultation</option><option>Completed</option><option>Cancelled</option><option>Rescheduled</option></select></label>
+            </div>
+            <div id="appointmentContent"></div>
+        </div>
+        <div class="appointment-summary-grid">
+            <section class="selected-appointment" id="selectedAppointment"></section>
+            <aside class="panel manage-card"><h2>Manage this appointment</h2><p>Select a record to review its details and available actions.</p></aside>
+        </div>
+    </template>
     <script src="admin-data.js"></script>
     <script src="admin-utils.js"></script>
     <script src="admin-auth.js"></script>

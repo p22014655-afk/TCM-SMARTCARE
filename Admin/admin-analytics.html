@@ -13,6 +13,42 @@
             <div class="nav-group"><p>Store</p><a data-nav-page="products" data-staff-only href="admin-products.html"><span class="nav-icon icon-box"></span><span>Products</span></a><a data-nav-page="orders" data-staff-only href="admin-orders.html"><span class="nav-icon icon-bag"></span><span>Orders</span></a></div><div class="nav-group"><p>Communication</p><a data-nav-page="messages" href="admin-messages.html"><span class="nav-icon icon-message"></span><span>Messages</span></a><a data-nav-page="feedback" data-staff-only href="admin-feedback.html"><span class="nav-icon icon-feedback"></span><span>Feedback</span></a><a data-nav-page="announcements" data-staff-only href="admin-announcements.html"><span class="nav-icon icon-megaphone"></span><span>Announcements</span></a></div><div class="nav-group"><p>Insights</p><a data-nav-page="analytics" data-staff-only href="admin-analytics.html"><span class="nav-icon icon-chart"></span><span>Analytics</span><i></i></a></div></nav><div class="sidebar-spacer"></div><div class="workspace-card"><strong>Staff workspace</strong><span>Care starts with a connected team.</span></div></aside>
         <main class="admin-main"><header class="admin-header"><div class="admin-title"><p id="adminDate"></p><h1 id="pageTitle"></h1></div><div class="admin-actions"><span class="notification-dot" aria-label="Notifications"></span><div class="admin-profile"><div class="avatar" id="adminAvatar"></div><span><strong id="adminName"></strong><small id="adminRole"></small></span></div><button class="ghost-btn" id="adminLogout" type="button">Logout</button></div></header><section class="admin-page" id="adminPage"></section></main>
     </div>
+    <template id="admin-analytics-view">
+        <section class="analytics-intro">
+            <div><h2>A clear view of clinic activity</h2><p>Appointment workload and product sales across your records.</p></div>
+            <button class="primary-btn analytics-export" id="exportAnalytics" type="button">Export Excel report</button>
+        </section>
+        <div class="analytics-toolbar">
+            <label>Period<select id="analyticsPeriod" aria-label="Filter analytics by period"><option value="all">All records</option><option value="month">Month</option><option value="6months">Last 6 months</option><option value="year">Year</option><option value="custom">Custom date range</option></select></label>
+            <label id="analyticsMonthFilter" hidden>Choose month<input id="analyticsMonth" type="month" aria-label="Choose analytics month"></label>
+            <label id="analyticsYearFilter" hidden>Choose year<select id="analyticsYear" aria-label="Choose analytics year"></select></label>
+            <label id="analyticsStartFilter" hidden>From<input id="analyticsStartDate" type="date" aria-label="Analytics start date"></label>
+            <label id="analyticsEndFilter" hidden>To<input id="analyticsEndDate" type="date" aria-label="Analytics end date"></label>
+            <label>Doctor<select id="analyticsDoctor" aria-label="Filter appointments by doctor"><option value="">All doctors</option></select></label>
+            <span class="analytics-data-note"><i></i> Data <span>Doctor filters appointments only</span></span>
+        </div>
+        <p class="analytics-filter-hint" id="analyticsFilterHint" hidden></p>
+        <div class="analytics-kpis" id="analyticsKpis"></div>
+        <div class="analytics-chart-grid">
+            <section class="panel analytics-panel">
+                <div class="analytics-panel-heading"><div><h2>Product sales by product</h2><p id="analyticsSalesSubtitle"></p></div></div>
+                <div class="analytics-sales-chart">
+                    <div id="analyticsSalesDonut"></div>
+                    <div class="analytics-legend" id="analyticsSalesLegend"></div>
+                </div>
+            </section>
+            <section class="panel analytics-panel">
+                <div class="analytics-panel-heading"><div><h2>Products by units sold</h2><p id="analyticsUnitsSubtitle"></p></div><span class="analytics-box-icon">◇</span></div>
+                <div class="analytics-product-list" id="analyticsProductRanking"></div>
+                <p class="analytics-footnote">Ranked by quantity sold, not revenue.</p>
+            </section>
+        </div>
+        <section class="panel analytics-doctor-panel">
+            <div class="analytics-panel-heading"><div><h2>Doctor breakdown</h2><p id="analyticsDoctorSubtitle"></p></div><span id="analyticsDoctorCount"></span></div>
+            <div id="analyticsDoctorTable"></div>
+        </section>
+        <p class="analytics-footer-note" id="analyticsFooterNote"></p>
+    </template>
     <script src="admin-data.js"></script>
     <script src="admin-utils.js"></script>
     <script src="admin-auth.js"></script>

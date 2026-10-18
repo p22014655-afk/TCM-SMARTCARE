@@ -11,7 +11,8 @@
         messages: renderMessages,
         feedback: renderFeedback,
         announcements: renderAnnouncements,
-        analytics: renderAnalytics
+        analytics: renderAnalytics,
+        accounts: renderAccounts
     };
     let activeMessageId = "";
 
@@ -29,6 +30,15 @@
 
     function byId(id) {
         return document.getElementById(id);
+    }
+
+    function mountView(templateId, target = byId("adminPage")) {
+        const template = byId(templateId);
+        if (!template || !(template instanceof HTMLTemplateElement)) {
+            throw new Error(`Required HTML template "${templateId}" was not found.`);
+        }
+        target.replaceChildren(template.content.cloneNode(true));
+        return target;
     }
 
     function escapeHtml(value) {
@@ -66,7 +76,7 @@
     }
 
     function protect(page) {
-        if (["feedback", "announcements", "analytics", "schedule", "products", "orders"].includes(page)) {
+        if (["feedback", "announcements", "analytics", "schedule", "products", "orders", "accounts"].includes(page)) {
             return window.TcmAdminAuth.checkRole(["staff"]);
         }
         return Boolean(window.TcmAdminAuth.checkAdminSession());
@@ -116,11 +126,39 @@
 
     function renderShell(page, title) {
         const user = current();
+        const nav = document.querySelector(".admin-nav");
+        if (nav && !nav.querySelector('[data-nav-page="accounts"]')) {
+            const insightsGroup = nav.querySelector('[data-nav-page="analytics"]')?.closest(".nav-group");
+            insightsGroup?.insertAdjacentHTML("afterend", `
+                <div class="nav-group">
+                    <p>Administration</p>
+                    <a data-nav-page="accounts" data-staff-only href="admin-accounts.html">
+                        <span class="nav-icon icon-users"></span><span>Staff &amp; Accounts</span>
+                    </a>
+                </div>
+            `);
+        }
         byId("adminDate").textContent = formatDate(new Date());
         byId("pageTitle").textContent = title;
         byId("adminAvatar").textContent = user.avatar;
         byId("adminName").textContent = user.name;
         byId("adminRole").textContent = user.role;
+        const profileButton = document.querySelector(".admin-profile");
+        if (profileButton) {
+            profileButton.setAttribute("role", "button");
+            profileButton.setAttribute("tabindex", "0");
+            profileButton.setAttribute("aria-label", "Edit your profile and password");
+            profileButton.setAttribute("title", "Edit profile");
+            profileButton.addEventListener("click", openAdminProfile);
+            profileButton.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openAdminProfile();
+                }
+            });
+        }
+        const savedUser = accountDirectory(data()).find((account) => account.id === user.id);
+        renderAdminAvatar(savedUser?.profilePicture || "", savedUser?.name || user.name);
 
         document.querySelectorAll("[data-nav-page]").forEach((link) => {
             const isActive = link.dataset.navPage === page;
@@ -131,10 +169,176 @@
         document.querySelectorAll("[data-staff-only]").forEach((link) => {
             link.hidden = user.role !== "staff";
         });
+        if (user.role === "doctor") {
+            ["schedule", "feedback", "announcements"].forEach((pageName) => {
+                document.querySelector(`[data-nav-page="${pageName}"]`)?.remove();
+            });
+        }
         document.querySelectorAll(".admin-nav .nav-group").forEach((group) => {
             group.hidden = !group.querySelector("a:not([hidden])");
         });
         byId("adminLogout").addEventListener("click", window.TcmAdminAuth.logout);
+    }
+
+    function renderAdminAvatar(photo, name) {
+        const avatar = byId("adminAvatar");
+        if (!avatar) return;
+        if (photo) {
+            avatar.textContent = "";
+            avatar.style.backgroundImage = `url("${photo}")`;
+            avatar.style.backgroundSize = "cover";
+            avatar.style.backgroundPosition = "center";
+            avatar.style.backgroundRepeat = "no-repeat";
+            avatar.setAttribute("aria-label", `${name} profile picture`);
+            return;
+        }
+        avatar.style.backgroundImage = "";
+        avatar.textContent = initials(name);
+        avatar.setAttribute("aria-label", `${name} initials`);
+    }
+
+    function openAdminProfile() {
+        const user = current();
+        const state = data();
+        const account = accountDirectory(state).find((item) => item.id === user.id);
+        if (!account) {
+            showToast("Could not find your account. Please sign in again.");
+            return;
+        }
+
+        let pendingPhoto = account.profilePicture || "";
+        openModal("Edit profile", `
+            <form class="admin-profile-form" id="adminProfileForm" autocomplete="off">
+                <div class="admin-profile-photo-editor">
+                    <div class="admin-profile-photo-preview" id="adminProfilePhotoPreview">
+                        ${pendingPhoto ? `<img src="${pendingPhoto}" alt="Profile picture preview">` : `<span>${escapeHtml(initials(account.name))}</span>`}
+                    </div>
+                    <div>
+                        <strong>Profile picture</strong>
+                        <p>Choose an image up to 5 MB. It will be resized before saving.</p>
+                        <label class="secondary-btn admin-photo-picker" for="adminProfilePhoto">Choose picture</label>
+                        <input id="adminProfilePhoto" type="file" accept="image/png,image/jpeg,image/webp">
+                        <button class="mini-btn" id="removeAdminProfilePhoto" type="button">Remove</button>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <label class="full"><span>Full name</span><input id="adminProfileName" name="name" maxlength="100" value="${escapeHtml(account.name)}" autocomplete="name" required></label>
+                    <label class="full"><span>Email address</span><input id="adminProfileEmail" name="email" type="email" maxlength="254" value="${escapeHtml(account.email)}" autocomplete="email" required></label>
+                </div>
+                <details class="admin-password-editor">
+                    <summary>Change password</summary>
+                    <div class="form-grid">
+                        <label class="full"><span>Current password</span><input id="adminCurrentPassword" type="password" autocomplete="current-password"></label>
+                        <label><span>New password</span><input id="adminNewPassword" type="password" minlength="8" autocomplete="new-password"></label>
+                        <label><span>Confirm new password</span><input id="adminConfirmPassword" type="password" minlength="8" autocomplete="new-password"></label>
+                    </div>
+                </details>
+            </form>
+        `, `<button class="primary-btn" id="saveAdminProfile" type="button">Save changes</button>`, { closeOnBackdrop: false });
+
+        const photoInput = byId("adminProfilePhoto");
+        photoInput.addEventListener("change", () => {
+            const file = photoInput.files?.[0];
+            if (!file) return;
+            if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+                showToast("Choose a JPG, PNG, or WEBP image.");
+                photoInput.value = "";
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showToast("Choose an image smaller than 5 MB.");
+                photoInput.value = "";
+                return;
+            }
+            const reader = new FileReader();
+            reader.addEventListener("error", () => showToast("Could not read that image. Try another file."));
+            reader.addEventListener("load", () => {
+                const image = new Image();
+                image.addEventListener("error", () => showToast("Could not open that image. Try another file."));
+                image.addEventListener("load", () => {
+                    const scale = Math.min(1, 512 / Math.max(image.width, image.height));
+                    const canvas = document.createElement("canvas");
+                    canvas.width = Math.max(1, Math.round(image.width * scale));
+                    canvas.height = Math.max(1, Math.round(image.height * scale));
+                    const context = canvas.getContext("2d");
+                    if (!context) {
+                        showToast("Could not process the picture in this browser.");
+                        return;
+                    }
+                    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                    pendingPhoto = canvas.toDataURL("image/jpeg", 0.82);
+                    byId("adminProfilePhotoPreview").innerHTML = `<img src="${pendingPhoto}" alt="Profile picture preview">`;
+                });
+                image.src = String(reader.result);
+            });
+            reader.readAsDataURL(file);
+        });
+        byId("adminProfileName").addEventListener("input", () => {
+            if (!pendingPhoto) {
+                byId("adminProfilePhotoPreview").innerHTML = `<span>${escapeHtml(initials(byId("adminProfileName").value))}</span>`;
+            }
+        });
+        byId("removeAdminProfilePhoto").addEventListener("click", () => {
+            pendingPhoto = "";
+            photoInput.value = "";
+            byId("adminProfilePhotoPreview").innerHTML = `<span>${escapeHtml(initials(byId("adminProfileName").value))}</span>`;
+        });
+        byId("saveAdminProfile").addEventListener("click", () => {
+            const form = byId("adminProfileForm");
+            if (!form.reportValidity()) return;
+            const name = byId("adminProfileName").value.trim();
+            const email = byId("adminProfileEmail").value.trim().toLowerCase();
+            const currentPassword = byId("adminCurrentPassword").value;
+            const newPassword = byId("adminNewPassword").value;
+            const confirmPassword = byId("adminConfirmPassword").value;
+            const changesPassword = Boolean(currentPassword || newPassword || confirmPassword);
+
+            if (!name || !email) return;
+            if (accountDirectory(state).some((item) => item.id !== account.id && item.email.trim().toLowerCase() === email)) {
+                showToast("Another account already uses this email address.");
+                return;
+            }
+            if (changesPassword) {
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showToast("Enter your current password and both new password fields.");
+                    return;
+                }
+                if (currentPassword !== account.password) {
+                    showToast("Your current password is incorrect.");
+                    return;
+                }
+                if (newPassword.length < 8) {
+                    showToast("Your new password must be at least 8 characters.");
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    showToast("The new passwords do not match.");
+                    return;
+                }
+            }
+
+            account.name = name;
+            account.email = email;
+            account.avatar = initials(name);
+            account.profilePicture = pendingPhoto;
+            if (changesPassword) account.password = newPassword;
+            try {
+                save(state);
+                const updatedSession = {
+                    id: account.id,
+                    name: account.name,
+                    role: account.role,
+                    avatar: account.avatar
+                };
+                sessionStorage.setItem("tcmAdminUser", JSON.stringify(updatedSession));
+                byId("adminName").textContent = account.name;
+                renderAdminAvatar(account.profilePicture, account.name);
+                closeModal();
+                showToast(changesPassword ? "Profile and password updated." : "Profile updated.");
+            } catch (error) {
+                showToast(error?.message || "Could not save your profile. Try using a smaller picture.");
+            }
+        });
     }
 
     function table(headers, rows) {
@@ -158,10 +362,6 @@
         return `<span class="avatar mini-avatar">${initials(name)}</span>`;
     }
 
-    function pageHero(title, text, action = "") {
-        return `<div class="page-hero"><div><h2>${title}</h2><p>${text}</p></div>${action}</div>`;
-    }
-
     function todayAppointments(state = data()) {
         const now = new Date();
         const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -183,91 +383,42 @@
         const checkedIn = today.filter((item) => item.status === "Checked In").length;
         const pendingOrders = state.orders.filter((item) => item.status === "Pending Packing").length;
         const lowStock = state.products.filter((item) => item.stock <= item.lowStockThreshold).length;
-        byId("adminPage").innerHTML = `
-            ${pageHero(`Good Morning, ${user.name}`, "Your clinic at a glance. Keep today's care moving smoothly.", `<button class="primary-btn" id="dashboardCreateAppointment" type="button"><span class="btn-icon icon-plus"></span>New Appointment</button>`)}
-            <div class="kpi-grid">
-                ${kpi(today.length, "Today's Appointments", "+2 compared with yesterday", "admin-appointments.html?date=today", "calendar", true)}
-                ${kpi(checkedIn, "Checked In", "Patients who have arrived", "admin-appointments.html?status=Checked%20In", "users")}
-                ${kpi(pendingOrders, "Orders To Process", "Pending packing", "admin-orders.html?status=Pending%20Packing", "box")}
-                ${kpi(lowStock, "Low Stock Products", "Needs restock review", "admin-products.html?stock=low", "bag")}
-            </div>
-            <div class="dashboard-layout">
-                <section class="panel">
-                    <div class="panel-header"><div><h2>Today's Appointments</h2><p>${today.length} appointments · ${checkedIn} checked in</p></div><a class="secondary-btn" href="admin-appointments.html">View all</a></div>
-                    ${table(["Time", "Patient / Service", "Doctor / Status", "Action"], today.map((item) => `
-                        <tr>
-                            <td>${formatTime(item.time)}</td>
-                            <td><div class="person-cell">${patientAvatar(item.patient)}<span><strong>${item.patient}</strong><small>${item.service}</small></span></div></td>
-                            <td><strong>${item.doctor}</strong><br>${badge(item.status)}</td>
-                            <td class="row-actions"><button class="mini-btn" data-view-appointment="${item.id}">View</button>${["Scheduled", "Rescheduled"].includes(item.status) ? `<button class="mini-btn" data-check-in="${item.id}">Check-in</button>` : ""}${item.status === "Completed" ? `<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">View Clinical Notes</a>` : ""}</td>
-                        </tr>
-                    `))}
-                    <p class="table-note"><span class="nav-icon icon-users"></span> Patient queue - Jamie Lee is waiting for TCM Consultation.</p>
-                </section>
-                <aside class="dashboard-side">
-                    <section class="panel">
-                    <h2>Needs your attention</h2>
-                    <p>Alerts to keep the clinic on track</p>
-                    <div class="alert-list">
-                        <a class="alert-card alert-red" href="admin-products.html?stock=low"><span class="nav-icon icon-alert"></span><strong>Ginseng stock is below 5 units.</strong><small>Review inventory</small></a>
-                        <a class="alert-card alert-gold" href="admin-appointments.html?date=upcoming"><span class="nav-icon icon-clipboard"></span><strong>Appointments are booked automatically.</strong><small>Check patients in when they arrive</small></a>
-                        <a class="alert-card alert-green" href="admin-orders.html?status=Pending%20Packing"><span class="nav-icon icon-box"></span><strong>2 orders are waiting for packing.</strong><small>Process orders</small></a>
-                    </div>
-                    </section>
-                    <section class="quick-panel">
-                    <h2>Quick Actions</h2>
-                    <div class="quick-grid">
-                        <a class="quick-action" href="admin-products.html?action=create"><span class="nav-icon icon-box"></span>Add Product</a>
-                        <a class="quick-action" href="admin-orders.html"><span class="nav-icon icon-bag"></span>View Orders</a>
-                        <a class="quick-action wide" href="admin-schedule.html"><span class="nav-icon icon-clock"></span>Manage Schedule</a>
-                    </div>
-                    </section>
-                </aside>
-            </div>
-            <section class="timeline-band">
-                <div class="panel-header"><div><h2>Today's care timeline</h2><p>Scheduled appointment times - Tuesday, 6 October</p></div></div>
-                <div class="timeline-row">
-                    ${today.map((item) => `<div><small>${formatTime(item.time)}</small><strong>${item.patient} - ${item.service}</strong><span>${item.doctor}</span></div>`).join("")}
-                </div>
-            </section>
-        `;
+        mountView("admin-staff-dashboard-view");
+        byId("staffDashboardGreeting").textContent = `Good Morning, ${user.name}`;
+        byId("staffDashboardKpis").innerHTML = [
+            kpi(today.length, "Today's Appointments", "+2 compared with yesterday", "admin-appointments.html?date=today", "calendar", true),
+            kpi(checkedIn, "Checked In", "Patients who have arrived", "admin-appointments.html?status=Checked%20In", "users"),
+            kpi(pendingOrders, "Orders To Process", "Pending packing", "admin-orders.html?status=Pending%20Packing", "box"),
+            kpi(lowStock, "Low Stock Products", "Needs restock review", "admin-products.html?stock=low", "bag")
+        ].join("");
+        byId("staffAppointmentSummary").textContent = `${today.length} appointments · ${checkedIn} checked in`;
+        byId("staffAppointmentTable").innerHTML = table(["Time", "Patient / Service", "Doctor / Status", "Action"], today.map((item) => `
+            <tr>
+                <td>${formatTime(item.time)}</td>
+                <td><div class="person-cell">${patientAvatar(item.patient)}<span><strong>${item.patient}</strong><small>${item.service}</small></span></div></td>
+                <td><strong>${item.doctor}</strong><br>${badge(item.status)}</td>
+                <td class="row-actions"><button class="mini-btn" data-view-appointment="${item.id}">View</button>${["Scheduled", "Rescheduled"].includes(item.status) ? `<button class="mini-btn" data-check-in="${item.id}">Check-in</button>` : ""}${item.status === "Completed" ? `<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">View Clinical Notes</a>` : ""}</td>
+            </tr>
+        `));
+        byId("staffTimeline").innerHTML = today.map((item) => `<div><small>${formatTime(item.time)}</small><strong>${item.patient} - ${item.service}</strong><span>${item.doctor}</span></div>`).join("");
         byId("dashboardCreateAppointment")?.addEventListener("click", openAppointmentCreate);
         bindAppointmentButtons();
     }
 
     function renderDoctorDashboard(state, user) {
         const mine = todayAppointments(state).filter((item) => item.doctorId === user.id);
-        byId("adminPage").innerHTML = `
-            <h2>Good Morning, ${user.name}</h2>
-            <div class="kpi-grid">
-                ${kpi(mine.length, "Today's Patients", "Assigned to you", "admin-appointments.html?date=today")}
-                ${kpi(mine.filter((item) => item.status === "Checked In").length, "Checked In", "Ready to start", "admin-appointments.html?status=Checked%20In")}
-                ${kpi(mine.filter((item) => item.status === "Completed").length, "Completed Today", "Consultations completed", "admin-appointments.html?status=Completed")}
-                ${kpi(state.messages.filter((item) => item.doctorId === user.id).reduce((sum, item) => sum + item.unread, 0), "Unread Messages", "Patient conversations", "admin-messages.html?filter=unread")}
-            </div>
-            <div class="dashboard-layout">
-                <section class="panel">
-                    <div class="panel-header"><h2>Today's Schedule</h2><a class="secondary-btn" href="admin-appointments.html">Open schedule</a></div>
-                    ${table(["Time", "Patient", "Service", "Status", "Action"], mine.map((item) => `
-                        <tr><td>${formatTime(item.time)}</td><td>${item.patient}</td><td>${item.service}</td><td>${badge(item.status)}</td>
-                        <td class="row-actions">${item.status === "Checked In" ? `<button class="mini-btn" data-start-consult="${item.id}">Start</button>` : `<button class="mini-btn" data-view-appointment="${item.id}">View</button>`}<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">Clinical Notes</a></td></tr>
-                    `))}
-                </section>
-                <aside class="panel">
-                    <h2>Patient Alerts</h2>
-                    <div class="alert-list">
-                        <a class="alert-card" href="admin-care-plan.html?appointment=APT-001">Pre-consultation submitted<br><strong>Jamie Lee</strong><br>Appointment: 10:00 AM</a>
-                    </div>
-                    <h2 style="margin-top:22px">Quick Actions</h2>
-                    <div class="quick-grid">
-                        <a class="quick-action" href="admin-appointments.html">Today's Appointments</a>
-                        <a class="quick-action" href="admin-patients.html">My Patients</a>
-                        <a class="quick-action" href="admin-care-plan.html">Pre-Consultation</a>
-                        <a class="quick-action" href="admin-messages.html">Messages</a>
-                    </div>
-                </aside>
-            </div>
-        `;
+        mountView("admin-doctor-dashboard-view");
+        byId("doctorDashboardGreeting").textContent = `Good Morning, ${user.name}`;
+        byId("doctorDashboardKpis").innerHTML = [
+            kpi(mine.length, "Today's Patients", "Assigned to you", "admin-appointments.html?date=today"),
+            kpi(mine.filter((item) => item.status === "Checked In").length, "Checked In", "Ready to start", "admin-appointments.html?status=Checked%20In"),
+            kpi(mine.filter((item) => item.status === "Completed").length, "Completed Today", "Consultations completed", "admin-appointments.html?status=Completed"),
+            kpi(state.messages.filter((item) => item.doctorId === user.id).reduce((sum, item) => sum + item.unread, 0), "Unread Messages", "Patient conversations", "admin-messages.html?filter=unread")
+        ].join("");
+        byId("doctorAppointmentTable").innerHTML = table(["Time", "Patient", "Service", "Status", "Action"], mine.map((item) => `
+            <tr><td>${formatTime(item.time)}</td><td>${item.patient}</td><td>${item.service}</td><td>${badge(item.status)}</td>
+            <td class="row-actions">${item.status === "Checked In" ? `<button class="mini-btn" data-start-consult="${item.id}">Start</button>` : `<button class="mini-btn" data-view-appointment="${item.id}">View</button>`}<a class="text-link" href="admin-care-plan.html?appointment=${encodeURIComponent(item.id)}">Clinical Notes</a></td></tr>
+        `));
         bindAppointmentButtons();
     }
 
@@ -280,51 +431,17 @@
         const state = data();
         const params = new URLSearchParams(location.search);
         const records = state.appointments.length;
-        const doctorOptions = user.role === "doctor"
-            ? `<option value="${user.id}">My Appointments</option>`
-            : `<option value="">All Doctors</option>${state.doctors.map((doctor) => `<option value="${doctor.id}">${doctor.name}</option>`).join("")}`;
-
-        byId("adminPage").innerHTML = `
-            ${pageHero("Keep every visit on track", "Manage bookings, arrival status and appointment details in one place.", user.role === "staff" ? `<button class="primary-btn" id="createAppointment" type="button"><span class="btn-icon icon-plus"></span>Create Appointment</button>` : "")}
-            <div class="panel appointment-panel">
-                <div class="panel-header">
-                    <div><h2>Appointments</h2><p id="appointmentResultSummary">${records} records</p></div>
-                    <div class="segmented"><button class="secondary-btn" id="calendarView">Calendar View</button><button class="primary-btn" id="tableView">Table View</button></div>
-                </div>
-                <div class="appointment-tabs">
-                    <button class="active" type="button" data-status-tab="">All appointments <span>${records}</span></button>
-                    <button type="button" data-status-tab="Scheduled">Scheduled <span>${state.appointments.filter((item) => item.status === "Scheduled").length}</span></button>
-                    <button type="button" data-status-tab="Checked In">Checked In <span>${state.appointments.filter((item) => item.status === "Checked In").length}</span></button>
-                    <button type="button" data-status-tab="Completed">Completed <span>${state.appointments.filter((item) => item.status === "Completed").length}</span></button>
-                </div>
-                <div class="table-toolbar">
-                    <label class="toolbar-search"><span>Search patient or appointment ID</span><input id="appointmentSearch" placeholder="e.g. patient name, phone or appointment ID"></label>
-                    <label><span>Appointment date</span><select id="filterDate">
-                        <option value="upcoming">Upcoming · 30 days</option>
-                        <option value="today">Today</option>
-                        <option value="tomorrow">Tomorrow</option>
-                        <option value="next7">Next 7 days</option>
-                        <option value="week">This week</option>
-                        <option value="next30">Next 30 days</option>
-                        <option value="custom">Choose a date…</option>
-                        <option value="past">Past appointments</option>
-                        <option value="">All dates</option>
-                    </select></label>
-                    <label class="custom-date-filter" id="customDateFilter" hidden><span>Choose date</span><input id="filterCustomDate" type="date" aria-label="Choose appointment date"></label>
-                    <label><select id="filterDoctor" ${user.role === "doctor" ? "disabled" : ""}>${doctorOptions}</select></label>
-                    <label><select id="filterService"><option value="">All Services</option><option>TCM Consultation</option><option>Acupuncture</option><option>Cupping</option><option>Herbal Medicine</option></select></label>
-                    <label><select id="filterStatus"><option value="">All</option><option>Scheduled</option><option>Checked In</option><option>In Consultation</option><option>Completed</option><option>Cancelled</option><option>Rescheduled</option></select></label>
-                </div>
-                <div id="appointmentContent"></div>
-            </div>
-            <div class="appointment-summary-grid">
-                <section class="selected-appointment" id="selectedAppointment"></section>
-                <aside class="panel manage-card">
-                    <h2>Manage this appointment</h2>
-                    <p>Select a record to review its details and available actions.</p>
-                </aside>
-            </div>
-        `;
+        mountView("admin-appointment-view");
+        byId("createAppointment").hidden = user.role !== "staff";
+        byId("filterDoctor").innerHTML = user.role === "doctor"
+            ? `<option value="${escapeHtml(user.id)}">My Appointments</option>`
+            : `<option value="">All Doctors</option>${state.doctors.map((doctor) => `<option value="${escapeHtml(doctor.id)}">${escapeHtml(doctor.name)}</option>`).join("")}`;
+        byId("filterDoctor").disabled = user.role === "doctor";
+        byId("appointmentResultSummary").textContent = `${records} records`;
+        byId("allAppointmentCount").textContent = records;
+        byId("scheduledAppointmentCount").textContent = state.appointments.filter((item) => item.status === "Scheduled").length;
+        byId("checkedInAppointmentCount").textContent = state.appointments.filter((item) => item.status === "Checked In").length;
+        byId("completedAppointmentCount").textContent = state.appointments.filter((item) => item.status === "Completed").length;
         byId("filterDate").value = params.has("date")
             ? params.get("date")
             : params.has("status") ? "" : "upcoming";
@@ -649,29 +766,10 @@
     function renderSchedule() {
         const state = data();
         const selectedDoctor = state.doctors[0];
-        byId("adminPage").innerHTML = `
-            <section class="schedule-doctor-bar">
-                <div class="person-cell">${patientAvatar(selectedDoctor.name)}<span><small>Manage availability for</small><strong id="scheduleDoctorName">${selectedDoctor.name}</strong></span></div>
-                <select id="scheduleDoctor">${state.doctors.map((doctor) => `<option value="${doctor.id}">${doctor.name}</option>`).join("")}</select>
-                <span class="badge active">Weekly recurring</span>
-                <span class="muted-text">Mon - Wed - Fri</span>
-            </section>
-            <div class="info-strip"><span class="nav-icon icon-alert"></span> Set the doctor's recurring availability and date exceptions. This calendar shows working hours, not booked appointments.</div>
-            <div class="schedule-layout">
-                <section class="panel schedule-calendar-panel">
-                    <div class="panel-header"><div><h2>5-11 October 2026</h2><p>Weekly availability</p></div><div class="row-actions"><button class="mini-btn">Today</button><button class="mini-btn">‹</button><button class="mini-btn">›</button></div></div>
-                    <div class="schedule-legend"><span></span> Morning availability <span></span> Afternoon availability <span></span> Not available</div>
-                    <div id="scheduleCalendar"></div>
-                    <div class="schedule-note"><span class="nav-icon icon-clock"></span><strong>30-minute slots - 1 patient per slot</strong><small>12:00-14:00 is a break. Unselected weekdays remain unavailable.</small></div>
-                </section>
-                <aside class="panel schedule-form-panel">
-                    <h2>Working hours</h2>
-                    <p>Recurring weekly schedule</p>
-                    <form class="form-grid compact-form" id="scheduleForm"></form>
-                </aside>
-            </div>
-            <section class="save-bar" id="scheduleSaveBar"></section>
-        `;
+        mountView("admin-schedule-view");
+        byId("scheduleDoctor").innerHTML = state.doctors.map((doctor) => `<option value="${escapeHtml(doctor.id)}">${escapeHtml(doctor.name)}</option>`).join("");
+        byId("scheduleDoctorName").textContent = selectedDoctor.name;
+        byId("scheduleDoctorAvatar").textContent = initials(selectedDoctor.name);
         byId("scheduleDoctor").addEventListener("change", () => {
             const doctor = data().doctors.find((item) => item.id === byId("scheduleDoctor").value);
             byId("scheduleDoctorName").textContent = doctor.name;
@@ -759,19 +857,12 @@
                 <td><button class="text-link" data-patient="${patient.id}">${index === 0 ? "Selected" : "View"}</button></td>
             </tr>`;
         });
-        byId("adminPage").innerHTML = `
-            ${pageHero("A connected patient directory", "Find contact details, review visit information and prepare for care.", `<button class="primary-btn" id="patientCreateAppointment" type="button"><span class="btn-icon icon-plus"></span>Create Appointment</button>`)}
-            <div class="patient-metric-strip"><strong><span class="nav-icon icon-users"></span>${state.patients.length} patients in this directory</strong><span>Pre-consultation <b>${submittedCount} submitted</b> <em>${state.patients.length - submittedCount} not submitted</em></span></div>
-            <div class="patient-layout">
-                <section class="panel patient-directory">
-                    <div class="panel-header"><div><h2>Patient directory</h2></div><span>${state.patients.length} records</span></div>
-                    <div class="table-toolbar"><label class="toolbar-search"><input id="patientSearch" placeholder="Search by name, ID, email or phone"></label><label><select><option>All patients</option></select></label><label><select><option>All pre-consultation statuses</option></select></label></div>
-                    <div id="patientTable">${table(["Patient / Contact / Visits", "Pre-consultation", ""], rows)}</div>
-                </section>
-                <aside class="patient-profile" id="patientProfile"></aside>
-            </div>
-            <section class="followup-card"><div><span class="nav-icon icon-clipboard"></span><strong>Pre-consultation to follow up</strong><small>Alex Wong - PAT-003 - Not submitted</small></div><button class="secondary-btn" data-patient="PAT-003">View patient</button></section>
-        `;
+        mountView("admin-patient-view");
+        byId("patientDirectoryCount").textContent = state.patients.length;
+        byId("patientRecordCount").textContent = `${state.patients.length} records`;
+        byId("submittedPreconsultCount").textContent = `${submittedCount} submitted`;
+        byId("pendingPreconsultCount").textContent = `${state.patients.length - submittedCount} not submitted`;
+        byId("patientTable").innerHTML = table(["Patient / Contact / Visits", "Pre-consultation", ""], rows);
         byId("patientSearch").addEventListener("input", (event) => {
             const query = event.target.value.toLowerCase();
             document.querySelectorAll("#patientTable tbody tr").forEach((row) => row.hidden = !row.textContent.toLowerCase().includes(query));
@@ -850,29 +941,18 @@
         const user = current();
         const state = data();
         const params = new URLSearchParams(location.search);
-        const doctorOptions = user.role === "doctor"
-            ? `<option value="${user.id}">My Appointments</option>`
-            : `<option value="">All Doctors</option>${state.doctors.map((doctor) => `<option value="${doctor.id}">${doctor.name}</option>`).join("")}`;
         const visibleAppointments = state.appointments.filter((item) => user.role !== "doctor" || item.doctorId === user.id);
         const selected = visibleAppointments.find((item) => item.id === params.get("appointment")) || visibleAppointments[0];
 
-        byId("adminPage").innerHTML = `
-            <section class="panel care-selector">
-                <div class="panel-header">
-                    <div><h2>Clinical Notes</h2><p>${user.role === "doctor" ? "Select a patient appointment to write or update clinical notes." : "Select a patient appointment to view the doctor's clinical notes."}</p></div>
-                    <span>${visibleAppointments.length} records</span>
-                </div>
-                <div class="table-toolbar">
-                    <label class="toolbar-search"><input id="careSearch" placeholder="Search patient or appointment ID"></label>
-                    <label><span>Appointment date</span><input id="careDate" type="date" aria-label="Filter clinical notes by appointment date"></label>
-                    <label><select id="careDoctor" ${user.role === "doctor" ? "disabled" : ""}>${doctorOptions}</select></label>
-                    <label><select id="careService"><option value="">All Services</option><option>TCM Consultation</option><option>Acupuncture</option><option>Cupping</option><option>Herbal Medicine</option></select></label>
-                    <label><select id="careStatus"><option value="">All Statuses</option><option>Draft</option><option>Saved</option><option>Completed</option><option>No care plan</option></select></label>
-                </div>
-                <div id="carePlanList"></div>
-            </section>
-            <div id="carePlanDetail" style="margin-top:18px"></div>
-        `;
+        mountView("admin-care-plan-view");
+        byId("carePlanDescription").textContent = user.role === "doctor"
+            ? "Select a patient appointment to write or update clinical notes."
+            : "Select a patient appointment to view the doctor's clinical notes.";
+        byId("carePlanRecordCount").textContent = `${visibleAppointments.length} records`;
+        byId("careDoctor").innerHTML = user.role === "doctor"
+            ? `<option value="${escapeHtml(user.id)}">My Appointments</option>`
+            : `<option value="">All Doctors</option>${state.doctors.map((doctor) => `<option value="${escapeHtml(doctor.id)}">${escapeHtml(doctor.name)}</option>`).join("")}`;
+        byId("careDoctor").disabled = user.role === "doctor";
 
         if (user.role === "doctor") byId("careDoctor").value = user.id;
         ["careSearch", "careDate", "careDoctor", "careService", "careStatus"].forEach((id) => {
@@ -1036,10 +1116,168 @@
     }
 
     function renderProducts() {
-        byId("adminPage").innerHTML = `<section class="panel"><div class="panel-header"><h2>Herbal Store Management</h2><button class="primary-btn" id="addProduct">+ Add Product</button></div><div class="table-toolbar"><label>Search Product<input id="productSearch"></label><label>Category<select id="productCategory"><option value="">All</option></select></label><label>Status<select id="productStatus"><option value="">All</option><option>Active</option><option>Inactive</option><option>Out of Stock</option><option>Low Stock</option></select></label></div><div id="productTable"></div></section>`;
+        mountView("admin-product-view");
         ["productSearch", "productCategory", "productStatus"].forEach((id) => byId(id).addEventListener("input", drawProducts));
         byId("addProduct").addEventListener("click", () => openProductForm());
         drawProducts();
+    }
+
+    function accountDirectory(state) {
+        return [
+            ...(Array.isArray(state.staff) ? state.staff : []),
+            ...(Array.isArray(state.doctors) ? state.doctors : [])
+        ].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    function renderAccounts() {
+        const state = data();
+        const staffCount = Array.isArray(state.staff) ? state.staff.length : 0;
+        const doctorCount = Array.isArray(state.doctors) ? state.doctors.length : 0;
+        mountView("admin-account-view");
+        byId("staffAccountCount").textContent = staffCount;
+        byId("doctorAccountCount").textContent = doctorCount;
+        byId("totalAccountCount").textContent = staffCount + doctorCount;
+        byId("generateAccount").addEventListener("click", openAccountForm);
+        byId("accountSearch").addEventListener("input", drawAccounts);
+        byId("accountTypeFilter").addEventListener("change", drawAccounts);
+        drawAccounts();
+    }
+
+    function drawAccounts() {
+        const state = data();
+        const query = byId("accountSearch").value.trim().toLowerCase();
+        const type = byId("accountTypeFilter").value;
+        const rows = accountDirectory(state)
+            .filter((account) => (!type || account.role === type) &&
+                (!query || `${account.name} ${account.email} ${account.staffId}`.toLowerCase().includes(query)))
+            .map((account) => `
+                <tr>
+                    <td><span class="account-person"><span class="avatar mini-avatar">${escapeHtml(account.avatar || initials(account.name))}</span><strong>${escapeHtml(account.name)}</strong></span></td>
+                    <td>${escapeHtml(account.staffId)}</td>
+                    <td>${escapeHtml(account.email)}</td>
+                    <td><span class="badge ${account.role === "doctor" ? "scheduled" : "active"}">${account.role === "doctor" ? "Doctor" : "Staff"}</span></td>
+                </tr>
+            `);
+        byId("accountTable").innerHTML = table(["Name", "Sign-in ID", "Email", "Account type"], rows);
+    }
+
+    function secureRandomBelow(limit) {
+        if (!window.crypto?.getRandomValues) {
+            throw new Error("Secure password generation is unavailable in this browser.");
+        }
+        const range = 0x100000000;
+        const ceiling = range - range % limit;
+        const value = new Uint32Array(1);
+        do {
+            window.crypto.getRandomValues(value);
+        } while (value[0] >= ceiling);
+        return value[0] % limit;
+    }
+
+    function temporaryPassword() {
+        const lower = "abcdefghijkmnopqrstuvwxyz";
+        const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        const digits = "23456789";
+        const symbols = "!@#$%*-_";
+        const all = lower + upper + digits + symbols;
+        const characters = [
+            lower[secureRandomBelow(lower.length)],
+            upper[secureRandomBelow(upper.length)],
+            digits[secureRandomBelow(digits.length)],
+            symbols[secureRandomBelow(symbols.length)]
+        ];
+        while (characters.length < 16) characters.push(all[secureRandomBelow(all.length)]);
+        for (let index = characters.length - 1; index > 0; index -= 1) {
+            const swapIndex = secureRandomBelow(index + 1);
+            [characters[index], characters[swapIndex]] = [characters[swapIndex], characters[index]];
+        }
+        return characters.join("");
+    }
+
+    function uniqueAccountIdentifiers(role, state) {
+        const users = accountDirectory(state);
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+            const suffix = String(100000 + secureRandomBelow(900000));
+            const staffId = role === "doctor" ? `doctor${suffix}` : `staff${suffix}`;
+            if (users.some((user) => user.staffId.toLowerCase() === staffId)) continue;
+            return {
+                id: `${role === "doctor" ? "dr" : "staff"}-${suffix}`,
+                staffId
+            };
+        }
+        throw new Error("Could not generate a unique sign-in ID. Please try again.");
+    }
+
+    function openAccountForm() {
+        openModal("Generate clinic account", `
+            <p class="account-form-intro">A secure temporary password will be generated for the new account. Save it and share it with the account holder.</p>
+            <form class="form-grid" id="accountForm" autocomplete="off">
+                <label class="full"><span>Full name</span><input name="name" maxlength="100" required autocomplete="name" placeholder="e.g. Alex Tan"></label>
+                <label class="full"><span>Email address</span><input name="email" type="email" maxlength="254" required autocomplete="email" placeholder="name@example.com"></label>
+                <label class="full"><span>Account type</span><select name="role" required><option value="staff">Clinic staff</option><option value="doctor">Doctor</option></select></label>
+            </form>
+        `, `<button class="primary-btn" id="saveGeneratedAccount" type="button">Generate account</button>`, { closeOnBackdrop: false });
+        byId("saveGeneratedAccount").addEventListener("click", () => {
+            const form = byId("accountForm");
+            if (!form.reportValidity()) return;
+            const formData = new FormData(form);
+            const name = String(formData.get("name") || "").trim();
+            const email = String(formData.get("email") || "").trim().toLowerCase();
+            const role = String(formData.get("role"));
+            const state = data();
+            if (!name || !email || !["staff", "doctor"].includes(role)) return;
+            if (accountDirectory(state).some((account) => account.email.trim().toLowerCase() === email)) {
+                showToast("An account already uses this email address.");
+                return;
+            }
+
+            try {
+                const identifiers = uniqueAccountIdentifiers(role, state);
+                const password = temporaryPassword();
+                const account = {
+                    ...identifiers,
+                    name,
+                    email,
+                    password,
+                    role,
+                    avatar: initials(name)
+                };
+                if (role === "doctor") {
+                    account.services = [];
+                    state.doctors.push(account);
+                } else {
+                    state.staff.push(account);
+                }
+                save(state);
+                closeModal();
+                renderAccounts();
+                openGeneratedAccount(account);
+            } catch (error) {
+                showToast(error.message || "Could not generate the account. Please try again.");
+            }
+        });
+    }
+
+    function openGeneratedAccount(account) {
+        openModal("Account generated", `
+            <div class="account-created-notice">Copy and share these sign-in details now. The temporary password will not appear again.</div>
+            <div class="account-credentials">
+                <label><span>Account type</span><input value="${account.role === "doctor" ? "Doctor" : "Clinic staff"}" readonly></label>
+                <label><span>Sign-in ID</span><input id="generatedAccountId" value="${escapeHtml(account.staffId)}" readonly></label>
+                <label><span>Email</span><input id="generatedAccountEmail" value="${escapeHtml(account.email)}" readonly></label>
+                <label><span>Temporary password</span><input id="generatedAccountPassword" value="${escapeHtml(account.password)}" readonly></label>
+            </div>
+        `, `<button class="secondary-btn" id="copyAccountCredentials" type="button">Copy sign-in details</button><button class="primary-btn" id="closeAccountCredentials" type="button">Done</button>`, { closeOnBackdrop: false });
+        byId("copyAccountCredentials").addEventListener("click", async () => {
+            const details = `Sign-in ID: ${account.staffId}\nEmail: ${account.email}\nTemporary password: ${account.password}`;
+            try {
+                await navigator.clipboard.writeText(details);
+                showToast("Sign-in details copied.");
+            } catch {
+                showToast("Copy is unavailable here. Select and copy the sign-in details.");
+            }
+        });
+        byId("closeAccountCredentials").addEventListener("click", closeModal);
     }
 
     function drawProducts() {
@@ -1219,7 +1457,7 @@
 
     function renderOrders() {
         const state = data();
-        byId("adminPage").innerHTML = `<section class="panel order-management"><div class="panel-header"><h2>Order Management</h2></div><div class="table-toolbar"><label>Order ID<input id="orderIdSearch" type="search" placeholder="Search order ID"></label><label>Order Date<input id="orderDateFilter" type="date"></label><label>Status<select id="orderStatus"><option value="">All</option><option>Pending Payment</option><option>Paid</option><option>Pending Packing</option><option>Packed</option><option>Shipped</option><option>Completed</option><option>Cancelled</option></select></label><label>Payment Method<select id="orderPayment"><option value="">All</option><option>FPX</option><option>Card</option><option>eWallet</option></select></label></div><div id="orderTable"></div></section>`;
+        mountView("admin-order-view");
         byId("orderStatus").value = new URLSearchParams(location.search).get("status") || "";
         ["orderIdSearch", "orderDateFilter"].forEach((id) => {
             byId(id).addEventListener(id === "orderIdSearch" ? "input" : "change", drawOrders);
@@ -1271,20 +1509,7 @@
             activeMessageId = messages[0]?.id || "";
         }
 
-        byId("adminPage").innerHTML = `
-            <section class="panel admin-message-page">
-                <div class="panel-header"><h2>Communication Centre</h2></div>
-                <div class="admin-messenger">
-                    <aside class="admin-conversation-panel">
-                        <div class="admin-conversation-heading">
-                            <h3>Conversations</h3>
-                            <input id="messageSearch" type="search" placeholder="Search conversations" aria-label="Search conversations">
-                        </div>
-                        <div class="admin-conversation-list" id="messageConversationList"></div>
-                    </aside>
-                    <section class="admin-chat-panel" id="chatWindow" aria-label="Conversation"></section>
-                </div>
-            </section>`;
+        mountView("admin-message-view");
 
         byId("messageSearch").addEventListener("input", drawMessageList);
         drawMessageList();
@@ -1408,12 +1633,13 @@
     function renderFeedback() {
         const state = data();
         const rows = state.feedback.map((item) => `<tr><td>${"★".repeat(item.rating)}</td><td>${item.patient}</td><td>${item.service}</td><td>${item.doctor}</td><td>${item.comment}</td><td>${shortDate(item.date)}</td><td class="row-actions"><button class="mini-btn">View</button><button class="mini-btn">Reply</button><button class="mini-btn">Mark as Featured</button><button class="mini-btn">Hide</button></td></tr>`);
-        byId("adminPage").innerHTML = `<section class="panel"><div class="panel-header"><h2>Feedback Management</h2></div>${table(["Rating", "Patient", "Service", "Doctor", "Comment", "Date", "Actions"], rows)}</section>`;
+        mountView("admin-feedback-view");
+        byId("feedbackTable").innerHTML = table(["Rating", "Patient", "Service", "Doctor", "Comment", "Date", "Actions"], rows);
     }
 
     function renderAnnouncements() {
         const state = data();
-        byId("adminPage").innerHTML = `<section class="panel"><div class="panel-header"><h2>Clinic Announcement</h2><button class="primary-btn" id="newAnnouncement">Create announcement</button></div><div id="announcementTable"></div></section>`;
+        mountView("admin-announcement-view");
         byId("newAnnouncement").addEventListener("click", () => openAnnouncementForm());
         drawAnnouncements();
     }
@@ -1456,26 +1682,509 @@
         });
     }
 
+    function analyticsDateMatches(value, dateRange) {
+        if (dateRange.period === "all") return true;
+        const dateText = String(value || "").slice(0, 10);
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText);
+        if (!match) return false;
+        return (!dateRange.start || dateText >= dateRange.start) &&
+            (!dateRange.end || dateText <= dateRange.end);
+    }
+
+    function analyticsDateRange(period, selectedMonth, selectedYear, startDate, endDate) {
+        const today = new Date();
+        const todayText = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        if (period === "all") return { period, label: "All records" };
+        if (period === "month") {
+            const [year, month] = selectedMonth.split("-").map(Number);
+            if (!year || !month) return { period, label: "Choose a month", invalid: true };
+            const date = new Date(year, month - 1, 1);
+            return {
+                period,
+                start: `${selectedMonth}-01`,
+                end: `${selectedMonth}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`,
+                label: date.toLocaleDateString("en-MY", { month: "long", year: "numeric" })
+            };
+        }
+        if (period === "6months") {
+            const firstMonth = new Date(today.getFullYear(), today.getMonth() - 5, 1);
+            return {
+                period,
+                start: `${firstMonth.getFullYear()}-${String(firstMonth.getMonth() + 1).padStart(2, "0")}-01`,
+                end: todayText,
+                label: `Last 6 months (to ${today.toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })})`
+            };
+        }
+        if (period === "year") {
+            const year = Number(selectedYear);
+            if (!year) return { period, label: "Choose a year", invalid: true };
+            return { period, start: `${year}-01-01`, end: `${year}-12-31`, label: `Year ${year}` };
+        }
+        if (period === "custom") {
+            if (!startDate || !endDate || startDate > endDate) {
+                return { period, start: startDate, end: endDate, label: "Choose a valid date range", invalid: true };
+            }
+            return { period, start: startDate, end: endDate, label: `${startDate} to ${endDate}` };
+        }
+        return { period: "all", label: "All records" };
+    }
+
+    function analyticsSummary(state, dateRange, doctorId) {
+        if (dateRange.invalid) {
+            return {
+                appointments: [],
+                completed: 0,
+                cancelled: 0,
+                scheduled: 0,
+                orders: [],
+                salesOrders: [],
+                sales: 0,
+                units: 0,
+                productRows: [],
+                doctorRows: state.doctors.map((doctor) => ({
+                    name: doctor.name,
+                    appointments: 0,
+                    completed: 0,
+                    cancelled: 0
+                }))
+            };
+        }
+        const appointments = state.appointments.filter((item) =>
+            analyticsDateMatches(item.date, dateRange) && (!doctorId || item.doctorId === doctorId)
+        );
+        const orders = state.orders.filter((order) => analyticsDateMatches(order.date, dateRange));
+        const salesOrders = orders.filter((order) =>
+            order.status !== "Cancelled" && order.status !== "Pending Payment"
+        );
+        const products = new Map();
+        salesOrders.forEach((order) => {
+            (Array.isArray(order.items) ? order.items : []).forEach((item) => {
+                const quantity = Number(item.quantity);
+                const price = Number(item.price);
+                const name = String(item.name || "Product");
+                if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(price) || price < 0) return;
+                const product = products.get(name) || { name, units: 0, sales: 0 };
+                product.units += quantity;
+                product.sales += quantity * price;
+                products.set(name, product);
+            });
+        });
+        const productRows = [...products.values()].sort((a, b) => b.sales - a.sales || a.name.localeCompare(b.name));
+        const doctorRows = state.doctors.map((doctor) => {
+            const doctorAppointments = appointments.filter((item) => item.doctorId === doctor.id);
+            return {
+                name: doctor.name,
+                appointments: doctorAppointments.length,
+                completed: doctorAppointments.filter((item) => item.status === "Completed").length,
+                cancelled: doctorAppointments.filter((item) => item.status === "Cancelled").length
+            };
+        });
+        return {
+            appointments,
+            completed: appointments.filter((item) => item.status === "Completed").length,
+            cancelled: appointments.filter((item) => item.status === "Cancelled").length,
+            scheduled: appointments.filter((item) => ["Scheduled", "Rescheduled"].includes(item.status)).length,
+            orders,
+            salesOrders,
+            sales: productRows.reduce((sum, product) => sum + product.sales, 0),
+            units: productRows.reduce((sum, product) => sum + product.units, 0),
+            productRows,
+            doctorRows
+        };
+    }
+
+    function analyticsXml(value) {
+        return String(value ?? "").replace(/[<>&'"]/g, (character) => ({
+            "<": "&lt;",
+            ">": "&gt;",
+            "&": "&amp;",
+            "'": "&apos;",
+            "\"": "&quot;"
+        })[character]);
+    }
+
+    function analyticsCell(value, style = "Text", type = "String", mergeAcross = 0) {
+        return { value, style, type, mergeAcross };
+    }
+
+    function analyticsRow(cells, height = 22) {
+        return { cells, height };
+    }
+
+    function analyticsSectionRow(title, columns = 2) {
+        return analyticsRow([analyticsCell(title, "Section", "String", columns - 1)], 25);
+    }
+
+    function analyticsColumnName(number) {
+        let name = "";
+        while (number > 0) {
+            const remainder = (number - 1) % 26;
+            name = String.fromCharCode(65 + remainder) + name;
+            number = Math.floor((number - 1) / 26);
+        }
+        return name;
+    }
+
+    function analyticsWorksheet(columns, rows, frozenRows) {
+        const mergeRanges = [];
+        const worksheetRows = rows.map((row, rowIndex) => {
+            const cells = row.cells.map((cell, columnIndex) => {
+                const reference = `${analyticsColumnName(columnIndex + 1)}${rowIndex + 1}`;
+                const styleId = analyticsStyleIds[cell.style] ?? 6;
+                const contents = cell.type === "Number"
+                    ? `<v>${Number.isFinite(Number(cell.value)) ? Number(cell.value) : 0}</v>`
+                    : `<is><t xml:space="preserve">${analyticsXml(cell.value)}</t></is>`;
+                const cellType = cell.type === "Number" ? "" : ` t="inlineStr"`;
+                if (cell.mergeAcross) {
+                    mergeRanges.push(`${reference}:${analyticsColumnName(columnIndex + 1 + cell.mergeAcross)}${rowIndex + 1}`);
+                }
+                return `<c r="${reference}" s="${styleId}"${cellType}>${contents}</c>`;
+            }).join("");
+            return `<row r="${rowIndex + 1}" ht="${row.height}" customHeight="1">${cells}</row>`;
+        }).join("");
+        const pane = frozenRows
+            ? `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${frozenRows}" topLeftCell="A${frozenRows + 1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`
+            : `<sheetViews><sheetView workbookViewId="0"/></sheetViews>`;
+        const merges = mergeRanges.length
+            ? `<mergeCells count="${mergeRanges.length}">${mergeRanges.map((range) => `<mergeCell ref="${range}"/>`).join("")}</mergeCells>`
+            : "";
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>${pane}<sheetFormatPr defaultRowHeight="18"/><cols>${columns.map((width, index) => `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`).join("")}</cols><sheetData>${worksheetRows}</sheetData>${merges}<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+    }
+
+    const analyticsStyleIds = {
+        Title: 1,
+        Subtitle: 2,
+        Meta: 3,
+        Section: 4,
+        TableHeader: 5,
+        Text: 6,
+        Label: 7,
+        Number: 8,
+        Currency: 9,
+        Percent: 10,
+        Total: 11,
+        TotalNumber: 12,
+        TotalCurrency: 13,
+        TotalPercent: 14,
+        Empty: 15
+    };
+
+    function analyticsStyles() {
+        const fonts = [
+            '<font><sz val="10"/><name val="Aptos"/><color rgb="FF18392E"/></font>',
+            '<font><b/><sz val="18"/><name val="Aptos Display"/><color rgb="FFFFFFFF"/></font>',
+            '<font><b/><sz val="12"/><name val="Aptos"/><color rgb="FF184936"/></font>',
+            '<font><sz val="10"/><name val="Aptos"/><color rgb="FF526A5D"/></font>',
+            '<font><b/><sz val="11"/><name val="Aptos"/><color rgb="FFFFFFFF"/></font>',
+            '<font><b/><sz val="10"/><name val="Aptos"/><color rgb="FFFFFFFF"/></font>',
+            '<font><sz val="10"/><name val="Aptos"/><color rgb="FF18392E"/></font>',
+            '<font><b/><sz val="10"/><name val="Aptos"/><color rgb="FF526A5D"/></font>',
+            '<font><b/><sz val="10"/><name val="Aptos"/><color rgb="FF184936"/></font>',
+            '<font><i/><sz val="10"/><name val="Aptos"/><color rgb="FF75857B"/></font>'
+        ];
+        const fills = [
+            '<fill><patternFill patternType="none"/></fill>',
+            '<fill><patternFill patternType="gray125"/></fill>',
+            '<fill><patternFill patternType="solid"><fgColor rgb="FF184936"/></patternFill></fill>',
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFE8F3E9"/></patternFill></fill>',
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFF2F6F0"/></patternFill></fill>',
+            '<fill><patternFill patternType="solid"><fgColor rgb="FF2F7859"/></patternFill></fill>',
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill>'
+        ];
+        const borders = [
+            '<border><left/><right/><top/><bottom/><diagonal/></border>',
+            '<border><left/><right/><top/><bottom style="thin"><color rgb="FFE4EBE3"/></bottom><diagonal/></border>',
+            '<border><left/><right/><top style="thin"><color rgb="FF2F7859"/></top><bottom/><diagonal/></border>'
+        ];
+        const alignments = {
+            center: '<alignment vertical="center"/>',
+            wrap: '<alignment vertical="center" wrapText="1"/>',
+            right: '<alignment horizontal="right" vertical="center"/>'
+        };
+        const style = (font, fill, border = 1, alignment = "center", numFmt = "") =>
+            `<xf numFmtId="${numFmt || 0}" fontId="${font}" fillId="${fill}" borderId="${border}" xfId="0" applyAlignment="1"${numFmt ? ' applyNumberFormat="1"' : ""}>${alignments[alignment]}</xf>`;
+        const cellFormats = [
+            '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>',
+            style(1, 2, 0, "center"),
+            style(2, 3, 0, "center"),
+            style(3, 4, 0, "center"),
+            style(4, 5, 0, "center"),
+            style(5, 5, 0, "wrap"),
+            style(6, 6, 1, "wrap"),
+            style(7, 4, 1, "wrap"),
+            style(6, 6, 1, "right", 3),
+            style(8, 6, 1, "right", 164),
+            style(6, 6, 1, "right", 165),
+            style(8, 3, 2, "wrap"),
+            style(8, 3, 2, "right", 3),
+            style(8, 3, 2, "right", 164),
+            style(8, 3, 2, "right", 165),
+            style(9, 6, 0, "wrap")
+        ];
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="&quot;RM&quot; #,##0.00"/><numFmt numFmtId="165" formatCode="0.0%"/></numFmts><fonts count="${fonts.length}">${fonts.join("")}</fonts><fills count="${fills.length}">${fills.join("")}</fills><borders count="${borders.length}">${borders.join("")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${cellFormats.length}">${cellFormats.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+    }
+
+    function analyticsZip(files) {
+        const encoder = new TextEncoder();
+        const crcTable = new Uint32Array(256);
+        for (let index = 0; index < 256; index += 1) {
+            let value = index;
+            for (let bit = 0; bit < 8; bit += 1) {
+                value = value & 1 ? 0xEDB88320 ^ (value >>> 1) : value >>> 1;
+            }
+            crcTable[index] = value >>> 0;
+        }
+        const crc32 = (bytes) => {
+            let crc = 0xFFFFFFFF;
+            bytes.forEach((byte) => { crc = crcTable[(crc ^ byte) & 0xFF] ^ (crc >>> 8); });
+            return (crc ^ 0xFFFFFFFF) >>> 0;
+        };
+        const write16 = (view, offset, value) => view.setUint16(offset, value, true);
+        const write32 = (view, offset, value) => view.setUint32(offset, value >>> 0, true);
+        const now = new Date();
+        const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | Math.floor(now.getSeconds() / 2);
+        const dosDate = ((Math.max(1980, now.getFullYear()) - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+        const localParts = [];
+        const directoryParts = [];
+        let offset = 0;
+        files.forEach(([name, contents]) => {
+            const filename = encoder.encode(name);
+            const bytes = encoder.encode(contents);
+            const checksum = crc32(bytes);
+            const localHeader = new Uint8Array(30 + filename.length);
+            const localView = new DataView(localHeader.buffer);
+            write32(localView, 0, 0x04034B50);
+            write16(localView, 4, 20);
+            write16(localView, 6, 0x0800);
+            write16(localView, 8, 0);
+            write16(localView, 10, dosTime);
+            write16(localView, 12, dosDate);
+            write32(localView, 14, checksum);
+            write32(localView, 18, bytes.length);
+            write32(localView, 22, bytes.length);
+            write16(localView, 26, filename.length);
+            write16(localView, 28, 0);
+            localHeader.set(filename, 30);
+            localParts.push(localHeader, bytes);
+
+            const centralHeader = new Uint8Array(46 + filename.length);
+            const centralView = new DataView(centralHeader.buffer);
+            write32(centralView, 0, 0x02014B50);
+            write16(centralView, 4, 20);
+            write16(centralView, 6, 20);
+            write16(centralView, 8, 0x0800);
+            write16(centralView, 10, 0);
+            write16(centralView, 12, dosTime);
+            write16(centralView, 14, dosDate);
+            write32(centralView, 16, checksum);
+            write32(centralView, 20, bytes.length);
+            write32(centralView, 24, bytes.length);
+            write16(centralView, 28, filename.length);
+            write16(centralView, 30, 0);
+            write16(centralView, 32, 0);
+            write16(centralView, 34, 0);
+            write16(centralView, 36, 0);
+            write32(centralView, 38, 0);
+            write32(centralView, 42, offset);
+            centralHeader.set(filename, 46);
+            directoryParts.push(centralHeader);
+            offset += localHeader.length + bytes.length;
+        });
+
+        const directorySize = directoryParts.reduce((sum, part) => sum + part.length, 0);
+        const endRecord = new Uint8Array(22);
+        const endView = new DataView(endRecord.buffer);
+        write32(endView, 0, 0x06054B50);
+        write16(endView, 4, 0);
+        write16(endView, 6, 0);
+        write16(endView, 8, files.length);
+        write16(endView, 10, files.length);
+        write32(endView, 12, directorySize);
+        write32(endView, 16, offset);
+        write16(endView, 20, 0);
+        return new Blob([...localParts, ...directoryParts, endRecord], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        });
+    }
+
+    function exportAnalytics(summary, periodLabel, doctorFilter) {
+        const generatedAt = new Date();
+        const dateLabel = generatedAt.toLocaleDateString("en-MY", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
+        const timeLabel = generatedAt.toLocaleTimeString("en-MY", {
+            hour: "numeric",
+            minute: "2-digit"
+        });
+        const summaryRows = [
+            analyticsRow([analyticsCell("TCM SMARTCARE+  |  CLINIC INSIGHTS", "Title", "String", 1)], 38),
+            analyticsRow([analyticsCell("Clinic analytics report", "Subtitle", "String", 1)], 26),
+            analyticsRow([analyticsCell(`Reporting period: ${periodLabel}     |     Generated: ${dateLabel} at ${timeLabel}`, "Meta", "String", 1)], 24),
+            analyticsRow([analyticsCell("Report details", "Section", "String", 1)], 25),
+            analyticsRow([analyticsCell("Appointment filter", "Label"), analyticsCell(doctorFilter || "All doctors", "Text")]),
+            analyticsRow([analyticsCell("Product sales", "Label"), analyticsCell("Cancelled and pending-payment orders excluded", "Text")]),
+            analyticsRow([analyticsCell("Scope", "Label"), analyticsCell("Doctor filter applies to appointments only; product sales use the selected period.", "Text")], 30),
+            analyticsRow([]),
+            analyticsSectionRow("Performance summary"),
+            analyticsRow([analyticsCell("Metric", "TableHeader"), analyticsCell("Value", "TableHeader")], 24),
+            analyticsRow([analyticsCell("Total appointments", "Text"), analyticsCell(summary.appointments.length, "Number", "Number")]),
+            analyticsRow([analyticsCell("Completed appointments", "Text"), analyticsCell(summary.completed, "Number", "Number")]),
+            analyticsRow([analyticsCell("Cancelled appointments", "Text"), analyticsCell(summary.cancelled, "Number", "Number")]),
+            analyticsRow([analyticsCell("Scheduled appointments", "Text"), analyticsCell(summary.scheduled, "Number", "Number")]),
+            analyticsRow([analyticsCell("Product sales", "Text"), analyticsCell(summary.sales, "Currency", "Number")]),
+            analyticsRow([analyticsCell("Included orders", "Text"), analyticsCell(summary.salesOrders.length, "Number", "Number")]),
+            analyticsRow([analyticsCell("Units sold", "Text"), analyticsCell(summary.units, "Number", "Number")]),
+            analyticsRow([analyticsCell("Products sold", "Text"), analyticsCell(summary.productRows.length, "Number", "Number")])
+        ];
+
+        const productRows = [
+            analyticsRow([analyticsCell("PRODUCT SALES", "Title", "String", 3)], 38),
+            analyticsRow([analyticsCell(`Revenue by product  |  ${periodLabel}`, "Subtitle", "String", 3)], 26),
+            analyticsRow([analyticsCell("Product", "TableHeader"), analyticsCell("Units sold", "TableHeader"), analyticsCell("Sales revenue", "TableHeader"), analyticsCell("Revenue share", "TableHeader")], 25),
+            ...summary.productRows.map((product) => analyticsRow([
+                analyticsCell(product.name, "Text"),
+                analyticsCell(product.units, "Number", "Number"),
+                analyticsCell(product.sales, "Currency", "Number"),
+                analyticsCell(summary.sales ? product.sales / summary.sales : 0, "Percent", "Number")
+            ])),
+            analyticsRow([
+                analyticsCell("Total product sales", "Total"),
+                analyticsCell(summary.units, "TotalNumber", "Number"),
+                analyticsCell(summary.sales, "TotalCurrency", "Number"),
+                analyticsCell(summary.sales ? 1 : 0, "TotalPercent", "Number")
+            ], 25)
+        ];
+        if (!summary.productRows.length) {
+            productRows.splice(3, 0, analyticsRow([analyticsCell("No product sales for the selected period.", "Empty", "String", 3)], 28));
+        }
+
+        const doctorRows = [
+            analyticsRow([analyticsCell("DOCTOR PERFORMANCE", "Title", "String", 4)], 38),
+            analyticsRow([analyticsCell(`Appointment breakdown  |  ${periodLabel}`, "Subtitle", "String", 4)], 26),
+            analyticsRow([analyticsCell("Doctor", "TableHeader"), analyticsCell("Appointments", "TableHeader"), analyticsCell("Completed", "TableHeader"), analyticsCell("Cancelled", "TableHeader"), analyticsCell("Completion rate", "TableHeader")], 25),
+            ...summary.doctorRows.map((doctor) => analyticsRow([
+                analyticsCell(doctor.name, "Text"),
+                analyticsCell(doctor.appointments, "Number", "Number"),
+                analyticsCell(doctor.completed, "Number", "Number"),
+                analyticsCell(doctor.cancelled, "Number", "Number"),
+                analyticsCell(doctor.appointments ? doctor.completed / doctor.appointments : 0, "Percent", "Number")
+            ])),
+            analyticsRow([
+                analyticsCell("All doctors", "Total"),
+                analyticsCell(summary.appointments.length, "TotalNumber", "Number"),
+                analyticsCell(summary.completed, "TotalNumber", "Number"),
+                analyticsCell(summary.cancelled, "TotalNumber", "Number"),
+                analyticsCell(summary.appointments.length ? summary.completed / summary.appointments.length : 0, "TotalPercent", "Number")
+            ], 25)
+        ];
+
+        const workbook = analyticsZip([
+            ["[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`],
+            ["_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+            ["xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView/></bookViews><sheets><sheet name="Summary" sheetId="1" r:id="rId1"/><sheet name="Product Sales" sheetId="2" r:id="rId2"/><sheet name="Doctor Performance" sheetId="3" r:id="rId4"/></sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`],
+            ["xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/></Relationships>`],
+            ["xl/styles.xml", analyticsStyles()],
+            ["xl/worksheets/sheet1.xml", analyticsWorksheet([36, 58], summaryRows, 10)],
+            ["xl/worksheets/sheet2.xml", analyticsWorksheet([46, 14, 20, 17], productRows, 3)],
+            ["xl/worksheets/sheet3.xml", analyticsWorksheet([30, 16, 14, 14, 19], doctorRows, 3)]
+        ]);
+        const url = URL.createObjectURL(workbook);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `tcm-clinic-analytics-${generatedAt.toISOString().slice(0, 10)}.xlsx`;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     function renderAnalytics() {
         const state = data();
-        const completed = state.appointments.filter((item) => item.status === "Completed").length;
-        const cancelled = state.appointments.filter((item) => item.status === "Cancelled").length;
-        const scheduled = state.appointments.filter((item) => ["Scheduled", "Rescheduled"].includes(item.status)).length;
-        const totalSales = state.orders.reduce((sum, order) => sum + Number(order.total), 0);
-        const productCounts = {};
-        state.orders.forEach((order) => order.items.forEach((item) => productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity));
-        byId("adminPage").innerHTML = `
-            <div class="kpi-grid">
-                ${kpi(state.appointments.length, "Total Appointments", "All demo records", "#")}
-                ${kpi(completed, "Completed", "Finished consultations", "#")}
-                ${kpi(cancelled, "Cancelled", "Cancelled appointments", "#")}
-                ${kpi(scheduled, "Scheduled", "Upcoming visits", "#")}
-            </div>
-            <div class="dashboard-layout">
-                <section class="panel"><h2>Product Analytics</h2><p>Total Orders: ${state.orders.length}</p><p>Total Sales: ${money(totalSales)}</p>${Object.entries(productCounts).map(([name, count]) => `<div class="chart-bar"><span>${name}</span><span><i style="width:${Math.min(100, count * 20)}%"></i></span><strong>${count}</strong></div>`).join("")}</section>
-                <section class="panel"><h2>Doctor Analytics</h2>${table(["Doctor", "Appointments", "Completed", "Cancelled"], state.doctors.map((doctor) => `<tr><td>${doctor.name}</td><td>${state.appointments.filter((item) => item.doctorId === doctor.id).length}</td><td>${state.appointments.filter((item) => item.doctorId === doctor.id && item.status === "Completed").length}</td><td>${state.appointments.filter((item) => item.doctorId === doctor.id && item.status === "Cancelled").length}</td></tr>`))}</section>
-            </div>
-        `;
+        const previousPeriod = byId("analyticsPeriod")?.value || "all";
+        const previousDoctor = byId("analyticsDoctor")?.value || "";
+        const today = new Date();
+        const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+        const previousMonth = byId("analyticsMonth")?.value || currentMonth;
+        const previousYear = byId("analyticsYear")?.value || String(today.getFullYear());
+        const previousStartDate = byId("analyticsStartDate")?.value || "";
+        const previousEndDate = byId("analyticsEndDate")?.value || "";
+        const dateRange = analyticsDateRange(previousPeriod, previousMonth, previousYear, previousStartDate, previousEndDate);
+        const summary = analyticsSummary(state, dateRange, previousDoctor);
+        const productColors = ["#2f7859", "#8da98d", "#bf9b4b", "#527c9a", "#b57052", "#7e6f98", "#4f9291"];
+        const totalProductSales = summary.sales;
+        let chartCursor = 0;
+        const gradientStops = summary.productRows.map((product, index) => {
+            const start = chartCursor;
+            chartCursor += totalProductSales ? product.sales / totalProductSales * 100 : 0;
+            return `${productColors[index % productColors.length]} ${start}% ${chartCursor}%`;
+        }).join(", ");
+        const maxUnits = Math.max(1, ...summary.productRows.map((product) => product.units));
+        const periodLabel = dateRange.label;
+        const years = new Set([today.getFullYear()]);
+        [...state.appointments, ...state.orders].forEach((item) => {
+            const year = Number(String(item.date || "").slice(0, 4));
+            if (Number.isInteger(year) && year >= 1900 && year <= 2100) years.add(year);
+        });
+        years.add(Number(previousYear));
+        const yearOptions = [...years].sort((a, b) => b - a);
+        const appointmentRows = summary.doctorRows.map((doctor, index) => `
+            <tr>
+                <td><span class="analytics-doctor-name"><i style="--doctor-color:${productColors[index % productColors.length]}"></i>${escapeHtml(doctor.name)}</span></td>
+                <td>${doctor.appointments}</td><td>${doctor.completed}</td><td>${doctor.cancelled}</td>
+            </tr>`);
+
+        mountView("admin-analytics-view");
+        byId("analyticsYear").innerHTML = yearOptions.map((year) => `<option value="${year}">${year}</option>`).join("");
+        byId("analyticsDoctor").innerHTML = `<option value="">All doctors</option>${state.doctors.map((doctor) => `<option value="${escapeHtml(doctor.id)}">${escapeHtml(doctor.name)}</option>`).join("")}`;
+        byId("analyticsPeriod").value = previousPeriod;
+        byId("analyticsDoctor").value = previousDoctor;
+        byId("analyticsMonth").value = previousMonth;
+        byId("analyticsYear").value = previousYear;
+        byId("analyticsStartDate").value = previousStartDate;
+        byId("analyticsEndDate").value = previousEndDate;
+        byId("analyticsMonthFilter").hidden = previousPeriod !== "month";
+        byId("analyticsYearFilter").hidden = previousPeriod !== "year";
+        byId("analyticsStartFilter").hidden = previousPeriod !== "custom";
+        byId("analyticsEndFilter").hidden = previousPeriod !== "custom";
+        byId("analyticsFilterHint").hidden = !dateRange.invalid;
+        byId("analyticsFilterHint").textContent = previousPeriod === "custom"
+            ? "Select a valid start and end date. The start date must be on or before the end date."
+            : "Choose a valid reporting period.";
+        byId("analyticsKpis").innerHTML = `
+            <article class="analytics-kpi featured"><span class="analytics-kpi-icon">▦</span><strong>${summary.appointments.length}</strong><b>Total appointments</b><small>${escapeHtml(periodLabel)}${previousDoctor ? ` · ${escapeHtml(doctorName(previousDoctor, state))}` : ""}</small></article>
+            <article class="analytics-kpi"><span class="analytics-kpi-icon">✓</span><strong>${summary.completed}</strong><b>Completed appointments</b><small>${summary.appointments.length ? `${(summary.completed / summary.appointments.length * 100).toFixed(1)}% of appointments` : "No appointments in this period"}</small></article>
+            <article class="analytics-kpi"><span class="analytics-kpi-icon">▤</span><strong>${money(summary.sales)}</strong><b>Product sales</b><small>${summary.salesOrders.length} included orders · ${escapeHtml(periodLabel)}</small></article>
+            <article class="analytics-kpi"><span class="analytics-kpi-icon">▱</span><strong>${summary.orders.length}</strong><b>Total orders</b><small>${summary.units} units sold across ${summary.productRows.length} products</small></article>`;
+        byId("analyticsSalesSubtitle").textContent = `Revenue share · ${periodLabel}`;
+        byId("analyticsSalesDonut").innerHTML = summary.sales > 0
+            ? `<div class="analytics-donut" role="img" aria-label="Product sales distribution by product" style="--sales-chart:conic-gradient(${gradientStops})"><div><strong>${money(summary.sales)}</strong><span>product sales</span></div></div>`
+            : `<div class="analytics-donut analytics-donut-empty"><div><strong>${money(0)}</strong><span>product sales</span></div></div>`;
+        byId("analyticsSalesLegend").innerHTML = summary.productRows.length
+            ? summary.productRows.map((product, index) => `
+                <div class="analytics-legend-row"><i style="--product-color:${productColors[index % productColors.length]}"></i><span><strong>${escapeHtml(product.name)}</strong><small>${product.units} ${product.units === 1 ? "unit" : "units"} sold</small></span><b>${summary.sales ? (product.sales / summary.sales * 100).toFixed(1) : "0.0"}%</b></div>
+            `).join("")
+            : `<p class="analytics-empty">No product sales in this period.</p>`;
+        byId("analyticsUnitsSubtitle").textContent = `${summary.units} units sold · ${periodLabel}`;
+        byId("analyticsProductRanking").innerHTML = summary.productRows.length
+            ? [...summary.productRows].sort((a, b) => b.units - a.units || a.name.localeCompare(b.name)).map((product) => `
+                <div class="analytics-product-row"><span>${escapeHtml(product.name)}</span><span class="analytics-unit-track"><i style="width:${product.units / maxUnits * 100}%"></i></span><strong>${product.units}</strong></div>
+            `).join("")
+            : `<p class="analytics-empty">No product sales in this period.</p>`;
+        byId("analyticsDoctorSubtitle").textContent = `Appointment counts by doctor · ${periodLabel}`;
+        byId("analyticsDoctorCount").textContent = `${summary.doctorRows.length} doctors`;
+        byId("analyticsDoctorTable").innerHTML = table(["Doctor", "Total appointments", "Completed", "Cancelled"], appointmentRows);
+        byId("analyticsFooterNote").textContent = `${periodLabel} · Store sales exclude cancelled and pending-payment orders.`;
+        byId("analyticsPeriod").addEventListener("change", renderAnalytics);
+        byId("analyticsDoctor").addEventListener("change", renderAnalytics);
+        ["analyticsMonth", "analyticsYear", "analyticsStartDate", "analyticsEndDate"].forEach((id) => {
+            byId(id).addEventListener("change", renderAnalytics);
+        });
+        byId("exportAnalytics").addEventListener("click", () => {
+            const selectedDoctor = state.doctors.find((doctor) => doctor.id === previousDoctor);
+            exportAnalytics(summary, periodLabel, selectedDoctor ? selectedDoctor.name : "All doctors");
+        });
     }
 
     document.addEventListener("DOMContentLoaded", () => {

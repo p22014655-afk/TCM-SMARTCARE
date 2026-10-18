@@ -13,6 +13,19 @@
             <div class="nav-group"><p>Store</p><a data-nav-page="products" data-staff-only href="admin-products.html"><span class="nav-icon icon-box"></span><span>Products</span></a><a data-nav-page="orders" data-staff-only href="admin-orders.html"><span class="nav-icon icon-bag"></span><span>Orders</span></a></div><div class="nav-group"><p>Communication</p><a data-nav-page="messages" href="admin-messages.html"><span class="nav-icon icon-message"></span><span>Messages</span></a><a data-nav-page="feedback" data-staff-only href="admin-feedback.html"><span class="nav-icon icon-feedback"></span><span>Feedback</span></a><a data-nav-page="announcements" data-staff-only href="admin-announcements.html"><span class="nav-icon icon-megaphone"></span><span>Announcements</span></a></div><div class="nav-group"><p>Insights</p><a data-nav-page="analytics" data-staff-only href="admin-analytics.html"><span class="nav-icon icon-chart"></span><span>Analytics</span></a></div></nav><div class="sidebar-spacer"></div><div class="workspace-card"><strong>Staff workspace</strong><span>Care starts with a connected team.</span></div></aside>
         <main class="admin-main"><header class="admin-header"><div class="admin-title"><p id="adminDate"></p><h1 id="pageTitle"></h1></div><div class="admin-actions"><span class="notification-dot" aria-label="Notifications"></span><div class="admin-profile"><div class="avatar" id="adminAvatar"></div><span><strong id="adminName"></strong><small id="adminRole"></small></span></div><button class="ghost-btn" id="adminLogout" type="button">Logout</button></div></header><section class="admin-page" id="adminPage"></section></main>
     </div>
+    <template id="admin-patient-view">
+        <div class="page-hero"><div><h2>A connected patient directory</h2><p>Find contact details, review visit information and prepare for care.</p></div><button class="primary-btn" id="patientCreateAppointment" type="button"><span class="btn-icon icon-plus"></span>Create Appointment</button></div>
+        <div class="patient-metric-strip"><strong><span class="nav-icon icon-users"></span><span id="patientDirectoryCount"></span> patients in this directory</strong><span>Pre-consultation <b id="submittedPreconsultCount"></b> <em id="pendingPreconsultCount"></em></span></div>
+        <div class="patient-layout">
+            <section class="panel patient-directory">
+                <div class="panel-header"><div><h2>Patient directory</h2></div><span id="patientRecordCount"></span></div>
+                <div class="table-toolbar"><label class="toolbar-search"><input id="patientSearch" placeholder="Search by name, ID, email or phone"></label><label><select aria-label="Patient filter"><option>All patients</option></select></label><label><select aria-label="Pre-consultation status filter"><option>All pre-consultation statuses</option></select></label></div>
+                <div id="patientTable"></div>
+            </section>
+            <aside class="patient-profile" id="patientProfile"></aside>
+        </div>
+        <section class="followup-card"><div><span class="nav-icon icon-clipboard"></span><strong>Pre-consultation to follow up</strong><small>Alex Wong - PAT-003 - Not submitted</small></div><button class="secondary-btn" data-patient="PAT-003" type="button">View patient</button></section>
+    </template>
     <script src="admin-data.js"></script>
     <script src="admin-utils.js"></script>
     <script src="admin-auth.js"></script>
