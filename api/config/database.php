@@ -15,9 +15,6 @@ try {
 
     $pdo->exec("SET time_zone = '+08:00'");
 
-    // Temporary compatibility
-    $db = $pdo;
-    $_db = $pdo;
 
 } catch (PDOException $e) {
     error_log($e->getMessage());
