@@ -1,0 +1,123 @@
+/* TCM SMARTCARE+ Index — page-specific styles.
+   The original User/login.css remains unchanged and is loaded first. */
+:root {
+    --tcm-ink: #102a2c;
+    --tcm-primary: #174f51;
+    --tcm-primary-dark: #103e40;
+    --tcm-teal: #17676a;
+    --tcm-muted: #597174;
+    --tcm-surface: #f4f9f9;
+    --tcm-soft: #d9eaeb;
+}
+* { margin: 0; }
+body { align-items: flex-start; }
+.page { box-shadow: 0 24px 80px rgba(36, 90, 98, .10); }
+.skip-link { position: fixed; top: -100px; left: 20px; padding: 12px 20px; background: #174f51; color: #fff; z-index: 2000; border-radius: 10px; }
+.skip-link:focus { top: 14px; }
+a:focus-visible,button:focus-visible { outline: 3px solid #72b0bd; outline-offset: 3px; }
+/* Header — same family as the source login page, extended for a public home. */
+.navbar { height: 88px; padding: 0 38px; gap: 26px; }
+.logo, .footer-logo { text-decoration: none; color: #071719; white-space: nowrap; }
+.logo { font-size: clamp(22px, 2vw, 30px); }
+.main-nav { margin-left: auto; gap: clamp(13px, 1.65vw, 26px); }
+.main-nav a { font-size: 14px; transition: color .2s ease; }
+.nav-actions { display: flex; align-items: center; gap: 14px; white-space: nowrap; }
+.nav-actions a { text-decoration: none; font-size: 14px; }
+.nav-register { color: #123f41; font-weight: 700; padding: 12px 6px; }
+.nav-register:hover { color: #17676a; }
+.nav-login { padding: 13px 21px; font-weight: 600; }
+.nav-login span { font-size: 17px; margin-left: 10px; }
+/* Hero: replace the old missing doctor.jpg/login box with a standalone landing composition. */
+.hero { display: grid; grid-template-columns: 1.03fr .97fr; height: auto; min-height: 670px; padding: 0; background: #e4f0ef; position: relative; border-radius: 0 0 30px 30px; }
+.hero-copy { z-index: 1; padding: clamp(72px, 7vw, 122px) 24px 105px clamp(42px, 6vw, 95px); align-self: center; }
+.eyebrow { display: flex; align-items: center; gap: 10px; color: #246568; text-transform: uppercase; font-weight: 700; letter-spacing: 2px; font-size: 11px; margin-bottom: 26px; }
+.eyebrow-dot { height: 9px; width: 9px; border-radius: 50%; background: #2e8582; box-shadow: 0 0 0 5px rgba(46, 133, 130, .13); }
+.hero h1 { margin: 0; color: #124b4d; font-size: clamp(52px, 5.35vw, 82px); line-height: 1.07; letter-spacing: -3.8px; font-weight: 400; }
+.hero h1 em { font-style: normal; font-weight: 700; }
+.hero-intro { max-width: 520px; margin: 28px 0 33px; color: #45696b; font-size: 17px; line-height: 1.75; }
+.hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn { min-height: 52px; padding: 15px 22px; border-radius: 50px; font-size: 13px; font-weight: 700; line-height: 1.2; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 20px; transition: transform .2s, background .2s, color .2s; }
+.btn:hover { transform: translateY(-2px); }
+.btn-primary { background: #174f51; color: #fff; }
+.btn-primary:hover { background: #0e3c3e; }
+.btn-secondary { background: rgba(255,255,255,.66); color: #174f51; border: 1px solid #adcbca; }
+.btn-secondary:hover { background: #fff; }
+.hero-tags { margin-top: 50px; display: flex; gap: 23px; flex-wrap: wrap; color: #54787a; font-size: 12px; font-weight: 700; }
+.hero-tags span::first-letter { color: #2d8e88; }
+.hero-art { position: relative; overflow: hidden; min-height: 620px; isolation: isolate; background: radial-gradient(ellipse at 55% 42%, #e4eee0 0 8%, transparent 55%), linear-gradient(150deg, #b8d5cf 0%, #91bdb2 52%, #638f85 100%); border-radius: 30px 0 30px 30px; }
+.hero-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(170deg, transparent 55%, rgba(17, 63, 62, .25)); z-index: -1; }
+.hero-art-halo { position: absolute; width: 520px; height: 520px; top: 6%; right: -10%; border-radius: 50%; background: #eff7eb; opacity: .31; filter: blur(2px); }
+.hero-art-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(239, 250, 235, .50); top: 17%; left: 10%; aspect-ratio: 1; }
+.hero-ring-outer { width: 83%; }
+.hero-ring-inner { width: 59%; top: 29%; left: 21%; }
+.botanical { position: absolute; width: 390px; height: 480px; max-width: 80%; top: 11%; left: 50%; transform: translateX(-48%) rotate(-7deg); filter: drop-shadow(10px 17px 16px rgba(11, 64, 56, .20)); }
+.botanical-stem { position: absolute; bottom: 45px; width: 7px; height: 350px; background: linear-gradient(#2e7165,#21574e); border-radius: 15px; transform-origin: bottom; }
+.stem-one { left: 49%; transform: rotate(-19deg); }
+.stem-two { left: 51%; height: 385px; transform: rotate(8deg); }
+.stem-three { left: 50%; height: 290px; transform: rotate(31deg); }
+.botanical-leaf { position: absolute; width: 124px; height: 69px; border-radius: 95% 6% 95% 8%; background: linear-gradient(140deg,#619d70,#2c725e 75%); box-shadow: inset -12px -8px 20px rgba(14,66,53,.21); }
+.botanical-leaf::after { content: ''; position: absolute; left: 8%; top: 50%; width: 85%; height: 1px; background: rgba(233,250,211,.40); transform: rotate(-21deg); }
+.leaf-one { top: 40px; left: 177px; transform: rotate(-44deg) scale(.86); }
+.leaf-two { top: 101px; left: 32px; transform: rotate(190deg); }
+.leaf-three { top: 135px; left: 199px; transform: rotate(-27deg) scale(1.08); }
+.leaf-four { top: 202px; left: 37px; transform: rotate(188deg) scale(.98); }
+.leaf-five { top: 244px; left: 229px; transform: rotate(-19deg) scale(.98); }
+.leaf-six { top: 290px; left: 54px; transform: rotate(202deg) scale(.8); }
+.leaf-seven { top: 15px; left: 101px; transform: rotate(184deg) scale(.72); }
+.leaf-eight { top: 341px; left: 211px; transform: rotate(-24deg) scale(.68); }
+.hero-art-caption { position: absolute; left: 36px; bottom: 38px; right: 36px; padding: 20px 24px; display: flex; gap: 18px; align-items: center; background: rgba(242, 248, 243, .91); border: 1px solid rgba(255,255,255,.70); border-radius: 19px; backdrop-filter: blur(9px); box-shadow: 0 10px 24px rgba(21, 64, 55, .07); }
+.caption-mark { display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #d3e6dc; color: #205f5b; border-radius: 50%; width: 50px; height: 50px; font-size: 31px; }
+.caption-small { display: block; margin-bottom: 6px; color: #4b8380; font-size: 10px; font-weight: 700; letter-spacing: 1.7px; }
+.hero-art-caption strong { color: #164d4b; font-size: 18px; line-height: 1.35; font-weight: 700; }
+.ornament { position: absolute; font-size: 35px; color: rgba(231,250,225,.48); }
+.ornament-top { right: 37px; top: 35px; }
+.ornament-bottom { left: 33px; top: 49%; }
+.hero-bottom-label { position: absolute; bottom: 32px; left: 6vw; z-index: 1; color: #6f9896; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; }
+/* Reuse original information-section typography and palette; only refine details. */
+.info-section { scroll-margin-top: 20px; }
+.section-heading p { max-width: 590px; }
+.about-content > div:first-child { line-height: 1.8; color: #426164; }
+.about-lead { font-size: 21px; line-height: 1.6; color: #174f51; margin-bottom: 19px; }
+.text-link { display: inline-flex; margin-top: 25px; gap: 16px; text-decoration: none; font-size: 15px; font-weight: 700; color: #17676a; }
+.text-link:hover { text-decoration: underline; }
+.approach-box { position: relative; overflow: hidden; }
+.approach-box > *:not(.approach-ornament) { position: relative; z-index: 1; }
+.approach-ornament { position: absolute; font-size: 215px; right: -30px; bottom: -105px; line-height: 1; color: rgba(121,179,164,.19); }
+.service-grid { gap: 14px; }
+.service-card { position: relative; padding: 25px 20px; }
+.service-number { display: block; font-size: 11px; font-weight: 700; color: #6f9798; margin-bottom: 11px; }
+.service-icon { margin-bottom: 27px; }
+.service-note, .demo-note { margin-top: 22px; color: #769092; font-size: 12px; line-height: 1.6; }
+/* Same dark green style as original Patient Stories section, with genuine workflow information instead of fictional reviews. */
+.journey-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.journey-card { border: 1px solid rgba(255,255,255,.27); padding: 31px 29px 35px; border-radius: 24px; color: #fff; }
+.journey-number { font-size: 13px; letter-spacing: 2px; color: #aed7d5; }
+.journey-line { height: 1px; background: rgba(220,245,239,.27); width: 100%; margin: 37px 0 30px; }
+.journey-card h3 { font-weight: 500; font-size: 23px; margin-bottom: 16px; }
+.journey-card p { color: #c5dedd; font-size: 15px; line-height: 1.75; }
+.team-card { box-shadow: 0 10px 28px rgba(41,82,83,.04); }
+/* Contact uses the source contact palette, but no fake working form/contact data. */
+.contact-cta { background: #174f51; padding: 46px; border-radius: 27px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 35px; }
+.contact-cta-label { color: #b0d5d2; font-size: 11px; font-weight: 700; letter-spacing: 1.8px; }
+.contact-cta h3 { max-width: 650px; font-size: clamp(24px,3vw,38px); font-weight: 400; margin: 15px 0 14px; }
+.contact-cta p { font-size: 15px; line-height: 1.65; max-width: 590px; color: #c7dddd; }
+.contact-cta-actions { display: flex; flex-direction: column; gap: 12px; align-items: stretch; min-width: 230px; }
+.btn-light { background: #e8f3f2; color: #174f51; }
+.btn-light:hover { background: #fff; }
+.btn-outline-light { background: transparent; border: 1px solid #779f9f; color: #fff; }
+.btn-outline-light:hover { background: rgba(255,255,255,.09); }
+.contact-note { margin-top: 18px; color: #597174; font-size: 12px; }
+.site-footer { background: #103e40; color: #d2e7e5; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 30px; padding: 48px 8%; }
+.footer-logo { font-size: 25px; font-weight: 700; color: #fff; letter-spacing: -1px; }
+.footer-logo span { color: #8fc0bd; }
+.site-footer p { margin-top: 10px; font-size: 13px; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 20px; }
+.footer-links a { color: #d2e7e5; text-decoration: none; font-size: 13px; }
+.footer-links a:hover { text-decoration: underline; }
+.site-footer small { width: 100%; color: #9fbdbb; font-size: 11px; }
+@media (min-width: 1600px) { .hero-copy { padding-left: 90px; } .hero-bottom-label { left: 90px; } }
+@media (max-width: 1200px) { .navbar { padding: 0 24px; gap: 13px; } .main-nav { gap: 14px; } .main-nav a,.nav-actions a { font-size: 12px; } .hero h1 { font-size: clamp(50px, 5.8vw, 72px); } .hero-copy { padding-left: 48px; } .hero-intro { font-size: 15px; } }
+@media (max-width: 1000px) { .navbar { height: auto; padding: 25px 24px; flex-wrap: wrap; } .main-nav { order: 3; width: 100%; justify-content: center; gap: 25px; } .nav-actions { margin-left: auto; } .hero { grid-template-columns: 1.06fr .94fr; min-height: 575px; } .hero-copy { padding: 70px 22px 90px 40px; } .hero h1 { font-size: clamp(44px, 5.3vw, 58px); letter-spacing: -2.5px; } .hero-art { min-height: 570px; } .botanical { transform: translateX(-48%) rotate(-7deg) scale(.79); transform-origin: top center; left: 51%; top: 18%; } .hero-art-caption { left: 20px; right: 20px; bottom: 24px; padding: 16px; } .hero-art-caption strong { font-size: 14px; } .hero-tags { margin-top: 30px; } .journey-grid { gap: 12px; } .journey-card { padding: 26px 20px; } }
+@media (max-width: 700px) { .page { box-shadow: none; } .navbar { border-radius: 0; padding: 21px 18px 15px; gap: 14px; } .logo { font-size: 24px; } .main-nav { order: 3; justify-content: flex-start; overflow-x: auto; gap: 22px; padding: 10px 0 3px; scrollbar-width: none; flex-wrap: nowrap; } .main-nav::-webkit-scrollbar { display: none; } .main-nav a { font-size: 12px; } .nav-actions { gap: 6px; } .nav-register { padding: 8px 4px; } .nav-login { padding: 11px 13px; } .nav-login span { display: none; } .hero { display: block; min-height: 0; border-radius: 0; } .hero-copy { padding: 68px 24px 48px; } .hero h1 { font-size: clamp(48px,10vw,67px); } .hero-intro { margin: 22px 0 26px; font-size: 15px; } .hero-tags { margin-top: 26px; } .hero-art { min-height: 370px; width: 100%; border-radius: 30px 30px 0 0; } .botanical { top: -9%; left: 52%; transform: translateX(-48%) rotate(-7deg) scale(.67); transform-origin: top center; } .hero-art-halo { width: 340px; height: 340px; } .hero-art-caption { width: auto; left: 20px; right: 20px; bottom: 19px; } .hero-bottom-label { display: none; } .about-content { gap: 30px; } .journey-grid { grid-template-columns: 1fr; } .journey-card { padding: 27px; } .journey-line { margin: 19px 0 18px; } .contact-cta { flex-direction: column; align-items: stretch; padding: 29px; } .contact-cta-actions { min-width: 0; } .site-footer { padding: 35px 7%; } .service-note { margin-top: 16px; } }
+@media (max-width: 450px) { .navbar { gap: 10px; } .logo { font-size: 20px; } .main-nav { width: 100%; } .nav-actions a { font-size: 11px; } .nav-login { padding: 9px 11px; } .hero-copy { padding: 58px 20px 42px; } .hero h1 { font-size: 45px; letter-spacing: -2.3px; } .eyebrow { font-size: 9px; letter-spacing: 1px; } .hero-tags { gap: 9px; font-size: 10px; } .btn { width: 100%; justify-content: space-between; } .hero-art { min-height: 345px; } .botanical { top: -8%; } .hero-art-caption { padding: 13px 14px; } .caption-mark { width: 41px; height: 41px; } .hero-art-caption strong { font-size: 13px; } .footer-links { gap: 13px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
