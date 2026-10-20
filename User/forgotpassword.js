@@ -7,8 +7,8 @@ const confirmPasswordError =
 
 const resetPasswordRequirements = [
     {
-        label: "At least 5 characters",
-        test: (value) => value.length >= 5
+        label: "At least 8 characters",
+        test: (value) => value.length >= 8
     },
     {
         label: "At least 4 numbers",

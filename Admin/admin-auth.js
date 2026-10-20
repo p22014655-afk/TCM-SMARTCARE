@@ -69,7 +69,7 @@
     function checkRole(allowedRoles) {
         const user = checkAdminSession();
         if (!user) return false;
-        if (!allowedRoles.includes(user.role)) {
+        if (!allowedRoles.includes(user.role) && !(user.role === "superadmin" && allowedRoles.includes("staff"))) {
             document.body.innerHTML = `
                 <main class="access-denied">
                     <h1>Access restricted</h1>

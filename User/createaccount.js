@@ -7,8 +7,8 @@ const createConfirmPasswordError =
 
 const passwordRequirements = [
     {
-        label: "At least 5 characters",
-        test: (value) => value.length >= 5
+        label: "At least 8 characters",
+        test: (value) => value.length >= 8
     },
     {
         label: "At least 4 numbers",
@@ -91,8 +91,7 @@ createConfirmPassword.addEventListener("input", () => {
     }
 });
 
-createAccountForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+createAccountForm.addEventListener("submit", (event) => {
     clearErrors();
     updateCreatePasswordChecklist();
 
@@ -154,42 +153,42 @@ createAccountForm.addEventListener("submit", async (event) => {
         isValid = false;
     }
 
-    if (!isValid) return;
+        
+        if (!isValid) {
+            event.preventDefault();
 
-    const submitButton = createAccountForm.querySelector(".create-button");
-    submitButton.disabled = true;
-    submitButton.textContent = "Creating account...";
+            document.getElementById("formStatus").textContent =
+                "Please correct the highlighted fields.";
 
-    try {
-        const existingProfile = JSON.parse(
-            localStorage.getItem("tcmPatientProfile") || "{}"
-        );
+            return;
+        }
+    });
 
-        const profile = {
-            ...existingProfile,
-            fullName,
-            email,
-            phone,
-            gender,
-            age
-        };
+    // Display PHP registration result
+    const params = new URLSearchParams(window.location.search);
 
-        await TcmAuth.setPassword(email, password);
-        localStorage.setItem("tcmPatientProfile", JSON.stringify(profile));
-        sessionStorage.setItem("tcmPatientName", fullName);
-        sessionStorage.setItem("tcmPatientEmail", email.trim().toLowerCase());
+    const messages = {
+        details: "Please check your registration details.",
+        phone: "Invalid phone number.",
+        password: "Password does not meet the requirements.",
+        confirm: "Passwords do not match.",
+        terms: "Please accept the agreement.",
+        duplicate: "This email is already registered.",
+        server: "Registration failed. Please try again."
+    };
 
-        document.getElementById("formStatus").textContent =
-            "Account created. Opening your patient dashboard...";
+    const formStatus = document.getElementById("formStatus");
 
-        setTimeout(() => {
-            window.location.href = "main.html";
-        }, 900);
-    } catch (error) {
-        document.getElementById("formStatus").textContent =
-            error.message || "Could not save the account. Please try again.";
+    if (params.has("error")) {
+        formStatus.textContent =
+            messages[params.get("error")] || "Registration failed.";
 
-        submitButton.disabled = false;
-        submitButton.textContent = "Create account";
+        formStatus.style.color = "#a33c3c";
     }
-});
+
+    if (params.get("success") === "1") {
+        formStatus.textContent =
+            "Account created successfully! You can now log in.";
+
+        formStatus.style.color = "#287052";
+    }
