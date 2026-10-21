@@ -1,5 +1,8 @@
 (function () {
     const storageKey = "tcmAdminData";
+    let cachedData = null;
+    let apiInitialized = false;
+    let saveQueue = Promise.resolve();
 
     const seedData = {
         staff: [
@@ -451,7 +454,7 @@
         localStorage.setItem("tcmMessages", JSON.stringify(patientMessages));
     }
 
-    function load() {
+    function loadLocal() {
         let data;
 
         try {
@@ -545,9 +548,91 @@
         return data;
     }
 
+    function load() {
+        return cachedData || loadLocal();
+    }
+
+    function safeForBrowser(data) {
+        const copy = structuredClone(data);
+        ["staff", "doctors"].forEach((key) => {
+            (copy[key] || []).forEach((account) => delete account.password);
+        });
+        return copy;
+    }
+
+    function setCachedData(data) {
+        cachedData = data;
+        localStorage.setItem(storageKey, JSON.stringify(safeForBrowser(data)));
+    }
+
+    function restore(data) {
+        cachedData = data;
+        localStorage.setItem(storageKey, JSON.stringify(safeForBrowser(data)));
+    }
+
+    async function initialize(loadRemote = true) {
+        const initialData = loadLocal();
+        ["staff", "doctors"].forEach((key) => {
+            const defaults = seedData[key] || [];
+            initialData[key].forEach((account) => {
+                const seededAccount = defaults.find((item) => item.id === account.id);
+                if (!account.password && seededAccount) {
+                    account.password = seededAccount.password;
+                }
+            });
+        });
+        const response = await fetch("/api/admin/initialize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data: initialData })
+        });
+
+        if (!response.ok) {
+            const result = await response.json().catch(() => ({}));
+            throw new Error(result.detail || "Could not initialize the admin database.");
+        }
+
+        apiInitialized = true;
+        if (!loadRemote) return;
+
+        const dataResponse = await fetch("/api/admin/data");
+        if (!dataResponse.ok) {
+            const result = await dataResponse.json().catch(() => ({}));
+            throw new Error(result.detail || "Could not load admin data from the database.");
+        }
+
+        const result = await dataResponse.json();
+        setCachedData(result.data);
+        mergePatientMessages(cachedData);
+        apiInitialized = true;
+    }
+
     function save(data) {
-        localStorage.setItem(storageKey, JSON.stringify(data));
+        cachedData = data;
+        localStorage.setItem(storageKey, JSON.stringify(safeForBrowser(data)));
         syncPatientMessages(data);
+
+        if (!apiInitialized) return Promise.resolve(true);
+
+        const snapshot = structuredClone(data);
+        saveQueue = saveQueue.then(async () => {
+            const response = await fetch("/api/admin/data", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ data: snapshot })
+            });
+            if (!response.ok) {
+                const result = await response.json().catch(() => ({}));
+                throw new Error(result.detail || "Could not save admin data to the database.");
+            }
+            return true;
+        }).catch((error) => {
+            window.dispatchEvent(new CustomEvent("tcm-admin-api-error", {
+                detail: error?.message || "Could not save admin data to the database."
+            }));
+            return false;
+        });
+        return saveQueue;
     }
 
     function reset() {
@@ -556,5 +641,5 @@
         return data;
     }
 
-    window.TcmAdminData = { load, save, reset, seedData };
+    window.TcmAdminData = { load, save, reset, initialize, restore, seedData };
 })();

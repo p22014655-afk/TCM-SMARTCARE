@@ -21,7 +21,7 @@
     }
 
     function save(nextData) {
-        window.TcmAdminData.save(nextData);
+        return window.TcmAdminData.save(nextData);
     }
 
     function current() {
@@ -90,36 +90,43 @@
             password.type = password.type === "password" ? "text" : "password";
         });
 
-        form.addEventListener("submit", (event) => {
+        form.addEventListener("submit", async (event) => {
             event.preventDefault();
             status.textContent = "";
             const button = form.querySelector("button[type='submit']");
             button.disabled = true;
             button.textContent = "Logging in...";
-            window.setTimeout(() => {
-                const result = window.TcmAdminAuth.login(byId("identifier").value, password.value);
-                if (!result.ok) {
-                    status.textContent = result.message;
-                    button.disabled = false;
-                    button.textContent = "Login";
-                    return;
-                }
+            try {
+                await window.TcmAdminAuth.login(byId("identifier").value, password.value);
                 window.TcmAdminAuth.redirectByRole();
-            }, 400);
+            } catch (error) {
+                status.textContent = error.message || "Could not sign in. Please try again.";
+                button.disabled = false;
+                button.textContent = "Login";
+            }
         });
 
-        byId("demoRole").addEventListener("change", (event) => {
+        byId("demoRole").addEventListener("change", async (event) => {
             const role = event.target.value;
             if (!role) return;
-            const user = role === "doctor" ? data().doctors[0] : data().staff[0];
-            byId("identifier").value = user.email;
-            password.value = user.password;
+            try {
+                await window.TcmAdminAuth.demoLogin(role);
+                window.TcmAdminAuth.redirectByRole();
+            } catch (error) {
+                status.textContent = error.message || "Demo sign-in is unavailable.";
+                event.target.value = "";
+            }
         });
 
         document.querySelectorAll("[data-demo-login]").forEach((button) => {
-            button.addEventListener("click", () => {
-                window.TcmAdminAuth.demoLogin(button.dataset.demoLogin);
-                window.TcmAdminAuth.redirectByRole();
+            button.addEventListener("click", async () => {
+                status.textContent = "";
+                try {
+                    await window.TcmAdminAuth.demoLogin(button.dataset.demoLogin);
+                    window.TcmAdminAuth.redirectByRole();
+                } catch (error) {
+                    status.textContent = error.message || "Demo sign-in is unavailable.";
+                }
             });
         });
     }
@@ -283,7 +290,7 @@
             photoInput.value = "";
             byId("adminProfilePhotoPreview").innerHTML = `<span>${escapeHtml(initials(byId("adminProfileName").value))}</span>`;
         });
-        byId("saveAdminProfile").addEventListener("click", () => {
+        byId("saveAdminProfile").addEventListener("click", async () => {
             const form = byId("adminProfileForm");
             if (!form.reportValidity()) return;
             const name = byId("adminProfileName").value.trim();
@@ -303,10 +310,6 @@
                     showToast("Enter your current password and both new password fields.");
                     return;
                 }
-                if (currentPassword !== account.password) {
-                    showToast("Your current password is incorrect.");
-                    return;
-                }
                 if (newPassword.length < 8) {
                     showToast("Your new password must be at least 8 characters.");
                     return;
@@ -321,9 +324,11 @@
             account.email = email;
             account.avatar = initials(name);
             account.profilePicture = pendingPhoto;
-            if (changesPassword) account.password = newPassword;
             try {
-                save(state);
+                if (changesPassword) {
+                    await window.TcmAdminAuth.changePassword(currentPassword, newPassword);
+                }
+                if (!await save(state)) return;
                 const updatedSession = {
                     id: account.id,
                     name: account.name,
@@ -1217,7 +1222,7 @@
                 <label class="full"><span>Account type</span><select name="role" required><option value="staff">Clinic staff</option><option value="doctor">Doctor</option></select></label>
             </form>
         `, `<button class="primary-btn" id="saveGeneratedAccount" type="button">Generate account</button>`, { closeOnBackdrop: false });
-        byId("saveGeneratedAccount").addEventListener("click", () => {
+        byId("saveGeneratedAccount").addEventListener("click", async () => {
             const form = byId("accountForm");
             if (!form.reportValidity()) return;
             const formData = new FormData(form);
@@ -1225,6 +1230,7 @@
             const email = String(formData.get("email") || "").trim().toLowerCase();
             const role = String(formData.get("role"));
             const state = data();
+            const previousState = structuredClone(state);
             if (!name || !email || !["staff", "doctor"].includes(role)) return;
             if (accountDirectory(state).some((account) => account.email.trim().toLowerCase() === email)) {
                 showToast("An account already uses this email address.");
@@ -1248,7 +1254,12 @@
                 } else {
                     state.staff.push(account);
                 }
-                save(state);
+                if (!await save(state)) {
+                    window.TcmAdminData.restore(previousState);
+                    closeModal();
+                    renderAccounts();
+                    return;
+                }
                 closeModal();
                 renderAccounts();
                 openGeneratedAccount(account);
@@ -2187,15 +2198,43 @@
         });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        if (document.body.dataset.page === "login") {
-            initLogin();
-            return;
+    function showServerError(error) {
+        document.body.replaceChildren();
+        const main = document.createElement("main");
+        main.className = "access-denied";
+        const heading = document.createElement("h1");
+        heading.textContent = "Admin server unavailable";
+        const message = document.createElement("p");
+        message.textContent = error?.message || "Could not connect to the Python admin server.";
+        const help = document.createElement("p");
+        help.textContent = "Start the backend with the setup instructions in README.md, then reload this page.";
+        main.append(heading, message, help);
+        document.body.append(main);
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const page = document.body.dataset.page;
+            if (page === "login") {
+                await window.TcmAdminData.initialize(false);
+                initLogin();
+                return;
+            }
+            if (!await window.TcmAdminAuth.initialize()) {
+                window.location.href = "admin-login.html";
+                return;
+            }
+            await window.TcmAdminData.initialize();
+            if (!protect(page)) return;
+            renderShell(page, document.body.dataset.title || "Admin Portal");
+            pages[page]?.();
+        } catch (error) {
+            showServerError(error);
         }
-        const page = document.body.dataset.page;
-        if (!protect(page)) return;
-        renderShell(page, document.body.dataset.title || "Admin Portal");
-        pages[page]?.();
+    });
+
+    window.addEventListener("tcm-admin-api-error", (event) => {
+        showToast(event.detail || "Could not save admin data to the database.");
     });
 
     window.addEventListener("storage", (event) => {

@@ -1,52 +1,68 @@
 (function () {
     const sessionKey = "tcmAdminUser";
 
-    function allUsers() {
-        const data = window.TcmAdminData.load();
-        return [...data.staff, ...data.doctors];
-    }
-
-    function login(identifier, password) {
-        const value = identifier.trim().toLowerCase();
-        const user = allUsers().find((item) =>
-            item.email.toLowerCase() === value || item.staffId.toLowerCase() === value
-        );
-
-        if (!value || !password) {
-            return { ok: false, message: "Enter your staff ID/email and password." };
+    async function apiRequest(path, options = {}) {
+        const response = await fetch(path, {
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            }
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(result.detail || "The admin server could not complete the request.");
         }
+        return result;
+    }
 
-        if (!user || user.password !== password) {
-            return { ok: false, message: "Invalid ID/email or password." };
+    async function login(identifier, password) {
+        const result = await apiRequest("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ identifier, password })
+        });
+        sessionStorage.setItem(sessionKey, JSON.stringify(result.user));
+        return result.user;
+    }
+
+    async function demoLogin(role) {
+        const result = await apiRequest("/api/auth/demo", {
+            method: "POST",
+            body: JSON.stringify({ role })
+        });
+        sessionStorage.setItem(sessionKey, JSON.stringify(result.user));
+        return result.user;
+    }
+
+    async function initialize() {
+        try {
+            const result = await apiRequest("/api/auth/me");
+            sessionStorage.setItem(sessionKey, JSON.stringify(result.user));
+            return result.user;
+        } catch (error) {
+            sessionStorage.removeItem(sessionKey);
+            if (error.message === "Please sign in to continue.") return null;
+            throw error;
         }
-
-        const session = {
-            id: user.id,
-            name: user.name,
-            role: user.role,
-            avatar: user.avatar
-        };
-
-        sessionStorage.setItem(sessionKey, JSON.stringify(session));
-        return { ok: true, user: session };
     }
 
-    function demoLogin(role) {
-        const data = window.TcmAdminData.load();
-        const user = role === "doctor" ? data.doctors[0] : data.staff[0];
-        const session = {
-            id: user.id,
-            name: user.name,
-            role: user.role,
-            avatar: user.avatar
-        };
-        sessionStorage.setItem(sessionKey, JSON.stringify(session));
-        return session;
+    async function changePassword(currentPassword, newPassword) {
+        await apiRequest("/api/auth/password", {
+            method: "PUT",
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        });
     }
 
-    function logout() {
-        sessionStorage.removeItem(sessionKey);
-        window.location.href = "admin-login.html";
+    async function logout() {
+        try {
+            await apiRequest("/api/auth/logout", { method: "POST" });
+        } finally {
+            sessionStorage.removeItem(sessionKey);
+            window.location.href = "admin-login.html";
+        }
     }
 
     function getCurrentAdmin() {
@@ -89,6 +105,8 @@
     window.TcmAdminAuth = {
         login,
         demoLogin,
+        initialize,
+        changePassword,
         logout,
         getCurrentAdmin,
         checkAdminSession,
