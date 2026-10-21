@@ -60,17 +60,18 @@
 
             <!-- Login Box -->
             <div class="login-box">
-                <form id="loginForm" action="main.html" method="get">
+                <form id="loginForm" action="../api/auth/login.php" method="POST">
 
                     <h2>Welcome Back</h2>
                     <p class="login-subtitle">Login to your TCM SMARTCARE+ account</p>
 
-                    <label for="email">Email Address</label>
+                    <label for="identifier">Email / Username</label>
                     <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        placeholder="Your email"
+                        type="text"
+                        id="identifier"
+                        name="identifier"
+                        placeholder="Email or Username"
+                        autocomplete="username"
                         required
                     >
 
@@ -389,30 +390,16 @@
     ↑
 </button>
 
-<script src="auth.js"></script>
+
 <script>
-    document.getElementById("loginForm").addEventListener("submit", async function (event) {
-        event.preventDefault();
-        const email = document.getElementById("email").value.trim().toLowerCase();
-        const password = document.getElementById("password").value;
-        const status = document.getElementById("loginStatus");
-        status.textContent = "Checking your account...";
+    const params = new URLSearchParams(window.location.search);
+    const loginStatus = document.getElementById("loginStatus");
 
-        try {
-            const isValid = await TcmAuth.verifyPassword(email, password);
-            if (!isValid) {
-                status.textContent = "Email or password is incorrect. If needed, use Forgot Password? to set a new password.";
-                return;
-            }
-
-            const profile = JSON.parse(localStorage.getItem("tcmPatientProfile") || "{}");
-            sessionStorage.setItem("tcmPatientName", profile.fullName || email.split("@")[0]);
-            sessionStorage.setItem("tcmPatientEmail", email);
-            window.location.href = "main.html";
-        } catch {
-            status.textContent = "Could not check your account. Please try again.";
-        }
-    });
+    if (params.get("error") === "invalid") {
+        loginStatus.textContent = "Invalid username or password.";
+    } else if (params.get("error") === "server") {
+        loginStatus.textContent = "Unable to login. Please try again.";
+    }
 
     const backToTopButton = document.getElementById("backToTop");
 
