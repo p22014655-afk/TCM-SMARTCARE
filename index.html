@@ -6,9 +6,10 @@
     <meta name="description" content="TCM SMARTCARE+ connects traditional Chinese medicine with a simple digital experience for consultations, treatments and wellness care.">
     <meta name="theme-color" content="#174f51">
     <title>TCM SMARTCARE+ | Traditional Care, Modern Convenience</title>
-    <!-- Reuse the original styling, without changing User/login.css. -->
+    
     <link rel="stylesheet" href="User/login.css">
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index-carousel.css?v=20261031">
 </head>
 <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -43,32 +44,28 @@
                         <span>✦ &nbsp; TCM-Inspired Wellness</span>
                     </div>
                 </div>
-                <div class="hero-art" aria-label="Stylized botanical illustration inspired by traditional herbal care" role="img">
-                    <div class="hero-art-halo" aria-hidden="true"></div>
-                    <div class="hero-art-ring hero-ring-outer" aria-hidden="true"></div>
-                    <div class="hero-art-ring hero-ring-inner" aria-hidden="true"></div>
-                    <div class="botanical" aria-hidden="true">
-                        <div class="botanical-stem stem-one"></div>
-                        <div class="botanical-stem stem-two"></div>
-                        <div class="botanical-stem stem-three"></div>
-                        <div class="botanical-leaf leaf-one"></div>
-                        <div class="botanical-leaf leaf-two"></div>
-                        <div class="botanical-leaf leaf-three"></div>
-                        <div class="botanical-leaf leaf-four"></div>
-                        <div class="botanical-leaf leaf-five"></div>
-                        <div class="botanical-leaf leaf-six"></div>
-                        <div class="botanical-leaf leaf-seven"></div>
-                        <div class="botanical-leaf leaf-eight"></div>
-                    </div>
-                    <div class="hero-art-caption">
+                <div class="hero-art hero-photo-carousel" data-auto-carousel aria-roledescription="carousel" aria-label="Traditional Chinese medicine care images">
+                    <div class="landing-slide is-active" data-carousel-slide aria-hidden="false"><img src="User/assets/landing/portrait2.webp" alt="Acupuncture therapy" fetchpriority="high"></div>
+                    <div class="landing-slide" data-carousel-slide aria-hidden="true"><img src="User/assets/landing/portrait3.webp" alt="Cupping therapy" loading="lazy"></div>
+                    <div class="landing-slide" data-carousel-slide aria-hidden="true"><img src="User/assets/landing/portrait4.webp" alt="Tuina therapy" loading="lazy"></div>
+                    <div class="landing-slide" data-carousel-slide aria-hidden="true"><img src="User/assets/landing/portrait1.webp" alt="TCM consultation with practitioner" loading="lazy"></div>
+                    <div class="root-photo-shade" aria-hidden="true"></div>
+                    <div class="hero-art-caption root-carousel-caption">
                         <span class="caption-mark" aria-hidden="true">✳</span>
-                        <div>
-                            <span class="caption-small">BALANCE &amp; WELL-BEING</span>
-                            <strong>Traditional wisdom.<br>Personalized attention.</strong>
+                        <div><span class="caption-small">BALANCE &amp; WELL-BEING</span><strong>Traditional wisdom.<br>Personalized attention.</strong></div>
+                    </div>
+                    <div class="landing-carousel-controls root-carousel-controls">
+                        <div class="landing-carousel-progress" role="tablist" aria-label="Choose a photo">
+                            <button type="button" class="landing-carousel-dot is-active" data-carousel-dot aria-label="Show acupuncture photo" aria-selected="true"></button>
+                            <button type="button" class="landing-carousel-dot" data-carousel-dot aria-label="Show cupping photo" aria-selected="false"></button>
+                            <button type="button" class="landing-carousel-dot" data-carousel-dot aria-label="Show Tuina photo" aria-selected="false"></button>
+                            <button type="button" class="landing-carousel-dot" data-carousel-dot aria-label="Show consultation photo" aria-selected="false"></button>
+                        </div>
+                        <div class="landing-carousel-arrows">
+                            <button type="button" data-carousel-prev aria-label="Previous photo">‹</button>
+                            <button type="button" data-carousel-next aria-label="Next photo">›</button>
                         </div>
                     </div>
-                    <span class="ornament ornament-top" aria-hidden="true">✳</span>
-                    <span class="ornament ornament-bottom" aria-hidden="true">✳</span>
                 </div>
                 <div class="hero-bottom-label">TCM SMARTCARE+ <span aria-hidden="true">—</span> A better way to connect with care</div>
             </section>
@@ -108,7 +105,7 @@
                 <div class="service-grid">
                     <article class="service-card"><div class="service-icon" aria-hidden="true">✚</div><span class="service-number">01 /</span><h3>TCM Consultation</h3><p>Discuss your concerns and explore an individualized, holistic approach to well-being.</p></article>
                     <article class="service-card"><div class="service-icon" aria-hidden="true">◌</div><span class="service-number">02 /</span><h3>Acupuncture</h3><p>Learn about a traditional practice involving the insertion of fine needles at selected points.</p></article>
-                    <article class="service-card"><div class="service-icon" aria-hidden="true">✿</div><span class="service-number">03 /</span><h3>Herbal Medicine</h3><p>Explore herbal approaches and individualized recommendations with a practitioner.</p></article>
+                    <article class="service-card"><div class="service-icon" aria-hidden="true">✦</div><span class="service-number">03 /</span><h3>Tuina Therapy</h3><p>Explore traditional Chinese therapeutic massage and targeted pressure techniques with a qualified practitioner.</p></article>
                     <article class="service-card"><div class="service-icon" aria-hidden="true">◒</div><span class="service-number">04 /</span><h3>Cupping Therapy</h3><p>Discover a traditional technique using cups to create suction on the skin.</p></article>
                     <article class="service-card"><div class="service-icon" aria-hidden="true">♡</div><span class="service-number">05 /</span><h3>Wellness Guidance</h3><p>Receive personalized discussions on lifestyle, rest, nutrition and everyday balance.</p></article>
                 </div>
@@ -136,7 +133,7 @@
                 </div>
                 <div class="team-grid">
                     <article class="team-card"><div class="doctor-avatar">LW</div><h3>Dr. Lim Wei Ming</h3><span>TCM Physician</span><p>General TCM consultation, acupuncture and wellness care.</p></article>
-                    <article class="team-card"><div class="doctor-avatar">TM</div><h3>Dr. Tan Mei Ling</h3><span>TCM Physician</span><p>Women's wellness, herbal medicine and holistic health.</p></article>
+                    <article class="team-card"><div class="doctor-avatar">TM</div><h3>Dr. Tan Mei Ling</h3><span>TCM Physician</span><p>Tuina therapy, women's wellness and holistic health.</p></article>
                     <article class="team-card"><div class="doctor-avatar">WJ</div><h3>Dr. Wong Jun Hao</h3><span>TCM Practitioner</span><p>Acupuncture, cupping therapy and lifestyle wellness.</p></article>
                 </div>
                 <p class="demo-note">Practitioner names and descriptions shown here are prototype content, not verified clinic listings.</p>
@@ -178,5 +175,6 @@
         backToTopButton.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
         document.getElementById('currentYear').textContent = new Date().getFullYear();
     </script>
+    <script src="User/login-carousel.js?v=20261031" defer></script>
 </body>
 </html>

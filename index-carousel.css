@@ -1,0 +1,17 @@
+
+.hero-photo-carousel{background:#b3d2c6;isolation:isolate}
+.hero-photo-carousel::after{display:none}
+.hero-photo-carousel .landing-slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .85s ease,visibility .85s}
+.hero-photo-carousel .landing-slide.is-active{opacity:1;visibility:visible}
+.hero-photo-carousel .landing-slide img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.hero-photo-carousel .root-photo-shade{position:absolute;z-index:2;inset:0;background:linear-gradient(180deg,rgba(16,64,56,.12),transparent 44%,rgba(10,47,40,.36));pointer-events:none}
+.hero-photo-carousel .root-carousel-caption{z-index:4;bottom:98px;left:28px;right:28px}
+.hero-photo-carousel .root-carousel-controls{z-index:5;position:absolute;left:30px;right:30px;bottom:26px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.hero-photo-carousel .landing-carousel-progress{display:flex;gap:10px;align-items:center}
+.hero-photo-carousel .landing-carousel-dot{border:0;background:rgba(255,255,255,.6);width:22px;height:5px;border-radius:10px;padding:0;cursor:pointer;transition:width .3s,background .3s}
+.hero-photo-carousel .landing-carousel-dot.is-active{width:44px;background:#fff}
+.hero-photo-carousel .landing-carousel-arrows{display:flex;gap:8px}
+.hero-photo-carousel .landing-carousel-arrows button{width:39px;height:39px;border-radius:50%;border:1px solid rgba(255,255,255,.65);color:#fff;background:rgba(14,72,62,.25);font-size:24px;cursor:pointer;backdrop-filter:blur(7px)}
+.hero-photo-carousel .landing-carousel-arrows button:hover{background:rgba(12,72,60,.65)}
+@media(max-width:700px){.hero-photo-carousel .root-carousel-caption{bottom:78px}.hero-photo-carousel .root-carousel-controls{bottom:20px;left:22px;right:22px}}
+@media(prefers-reduced-motion:reduce){.hero-photo-carousel .landing-slide{transition:none}}
